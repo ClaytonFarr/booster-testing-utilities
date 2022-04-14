@@ -6,57 +6,55 @@
 - [x] clean up organization of helper functions
 - [x] re-review references for additional techniques/ideas
 - [x] check if any parts of test helpers are no longer needed
+- [x] make test work in AWS deployed environment
+- [x] check if test updates can fire vitest HMR
 
 - [ ] note expectations for each element / integration
 - [ ] create test example for each type of integration
 - [ ] attempt to abstract test patterns into reusable functions
 
-- [ ] make test work in AWS deployed environment (seems like deployed graphql server is not working)
 - [ ] create 2nd integration test
 - [ ] sort out how to make these tests show up in coverage report
-- [ ] check if test updates can fire vitest HMR
 
 _References_
 
 - https://github.com/boostercloud/booster/tree/main/packages/framework-integration-tests/integration/provider-unaware/functionality
 - https://github.com/boostercloud/booster/tree/6448db061ba7d11bd91bbd6525e4b646fb8205a9/packages/framework-provider-local/test
 - https://github.com/boostercloud/booster/tree/main/packages/framework-core/test
-- https://github.com/boostercloud/booster/blob/main/.vscode/launch.json#L8-L29
 
-- https://www.npmjs.com/package/patch-package
+- leaning on Booster framework tests for core functionality coverage (e.g. commands processing successfully, events reducing into entities, entities projecting into read models, etc.)
 
 # Test Patterns
 
-**Commands**
+**A Command**
 
-- should accept specific parameters(s)
-- should fail if missing required parameters(s)
-- should fail with invalid argument(s)
+- ✅ should accept specific parameters(s)
+- ✅ should fail when required parameters are missing
+- ✅ should fail if parameters values are empty ('')
+- ✅ should fail if parameters are invalid type
+- ✅ should succeed submitting only required parameter(s)
+- ✅ should register specific event(s)
 - should perform certain work
-- should register specific event(s)
-- integrations / side effects:
-  - registered event(s) should update specific entity(ies)
-  - registered event(s) data may update specific read model(s)
 
-**Scheduled Commands**
+**A Scheduled Command**
 
 - xxx
 
-**Event Handlers**
+**An Event Handler**
 
 - xxx
 
-**Events**
+**An Event**
 
-- xxx
+- should update specific entity(ies)
 
-**Entities**
+**An Entity**
 
-- xxx
+- may update specific read model(s)
 
-**Read Models**
+**A Read Model**
 
-- should update read model with projected entity snapshot data
+- should project specific entity data
 
 # Testing Notes
 
@@ -67,60 +65,3 @@ _References_
     - in new terminal run `boost deploy -e test`
     - in original terminal (where tests running), press `a` to re-run tests
   - when cancel process in original terminal, should nuke deployed test stack
-
-## Expected Behavior
-
-- calling `CommandOne` should -
-
-  - expect a single string argument of 'paramOne'
-  - transform 'paramOne' to uppercase
-  - transform 'paramOne' to excited (append '!!!')
-  - register `EventOne`
-    - with uppercase arg for 'attrOne'
-      - reduce uppercase arg into 'attrOne' of `EntityOne`
-        - project uppercase arg into 'attrOne' of `EntityOneReadModel`
-  - register `EventTwo`
-    - with excited arg for 'attrOne'
-    - with either 'deactivate' or undefined for 'attrTwo'
-      - reduce excited arg into 'attrOne' of `EntityTwo`
-      - reduce 'deactivate'|undefined into 'attrTwo' of `EntityTwo`
-      - reduce true|false into 'attrThree' of `EntityTwo`
-        - project excited arg into 'attrOne' of `EntityTwoReadModel`
-        - NOT project 'attrTwo' or 'attrThree' into `EntityTwoReadModel`
-      - call `EventHandlerOne`, which will
-        - transform excited arg to reverse
-        - register `EventThree`
-          - with excited+reverse arg for 'attrOne'
-            - reduce excited arg into 'attrTwo' of `EntityOne`
-              - project excited arg into 'attrTwo' of `EntityOneReadModel`
-
-- if call `CommandOne` with 'apple' value for 'paramOne'
-
-  - create 1 `EntityOne` item whose attributes should be
-    - attrOne: 'APPLE'
-    - attrTwo: '!!!elppa'
-  - create 1 `EntityOneReadModel` item whose attributes should be
-    - attrOne: 'APPLE'
-    - attrTwo: '!!!elppa'
-  - create 1 `EntityTwo` item whose attributes should be
-    - attrOne: 'apple!!!'
-    - attrTwo: undefined
-    - active: true
-  - create 1 `EntityTwoReadModel` item whose attributes should be
-    - attrOne: 'apple!!!'
-
-- if call `CommandOne` with 'leave' value for 'paramOne'
-
-  - create 1 `EntityOne` item whose attributes should be
-    - attrOne: 'LEAVE'
-    - attrTwo: '!!!evael'
-  - create 1 `EntityOneReadModel` item whose attributes should be
-    - attrOne: 'LEAVE'
-    - attrTwo: '!!!evael'
-  - create 1 `EntityTwo` item whose attributes should be
-    - attrOne: 'leave!!!'
-    - attrTwo: 'deactivate'
-    - active: false
-  - create 1 `EntityTwoReadModel` item whose attributes should be
-    - attrOne: 'leave!!!'
-

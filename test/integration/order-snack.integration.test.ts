@@ -1,129 +1,174 @@
 // Imports
-// =============================================================================
-import type { EventEnvelope, ReadModelEnvelope, UUID } from '@boostercloud/framework-types'
+// =================================================================================================
+import type { EventEnvelope } from '@boostercloud/framework-types'
 import * as helpers from '../helpers'
 import { applicationUnderTest, graphQLclient } from '../helpers'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { faker } from '@faker-js/faker'
 
-// Tested Elements
-import { orderSnack as testedCommand } from '../helpers'
-const testedReadModel = 'FruitReadModel'
-
 // Test
-// =============================================================================
+// =================================================================================================
 describe('Order Snack Command', async () => {
-  // cross-test variables
-  let fruit: string
-  let drink: string
-  let requestId: string | UUID
+  //
+  // TEST SETUP
+  // -----------------------------------------------------------------------------------------------
+  const commandName = 'OrderSnack'
+  const acceptedParameters: helpers.Parameter[] = [
+    { name: 'fruit', type: 'String', required: true },
+    { name: 'drink', type: 'String' },
+    { name: 'id', type: 'ID' },
+  ]
+  const registeredEvents: helpers.RegisteredEvent[] = [
+    // † currently looking up event in database requires knowing one of its reducing entities
+    { input: { fruit: 'apple' }, event: 'FruitOrdered', reducingEntity: 'Fruit' },
+    { input: { fruit: 'pear', drink: 'water' }, event: 'DrinkOrdered', reducingEntity: 'Drink' },
+    { input: { fruit: 'candy' }, event: 'CandyOrdered', reducingEntity: 'Tattle' },
+  ]
+  const additionalWorkDone = [
+    {
+      work: "check if request was for 'candy'",
+      testedInputParameter: {
+        name: 'fruit',
+        value: 'candy',
+      },
+      expectedResult: '', // ? add code to check if CandyOrder event was registered
+    },
+  ]
 
-  beforeEach(() => {
-    fruit = faker.random.word()
-    drink = faker.random.word()
-    requestId = faker.datatype.uuid()
-  })
+  // TEST RESOURCES
+  // -----------------------------------------------------------------------------------------------
+  const acceptedParameterNames = helpers.getAcceptedParameterNames(acceptedParameters)
+  const allVariables = helpers.createAllVariables(acceptedParameters)
+  const requiredVariables = helpers.createRequiredVariables(acceptedParameters)
+  const emptyVariables = helpers.createEmptyVariables(acceptedParameters)
+  const invalidDataTypeVariables = helpers.createInvalidDataTypeVariables(acceptedParameters)
+  const commandMutation = helpers.createCommandMutation(commandName, acceptedParameters)
 
-  it('should accept a command successfully', async () => {
+  // TESTS
+  // -----------------------------------------------------------------------------------------------
+  it(`should accept the parameters: ${acceptedParameterNames.join(', ')}`, async () => {
+    // command variables
+    const commandVariables = allVariables
+
     // submit command
-    const mutationResult = await testedCommand(graphQLclient, fruit, drink, requestId)
+    const mutationResult = await graphQLclient.mutate({
+      variables: commandVariables,
+      mutation: commandMutation,
+    })
+
     // evaluate command response
     expect(mutationResult).not.toBeNull()
     expect(mutationResult?.data).toBeTruthy()
+    console.log(`✅ [Command Accepts Expected Params] ${JSON.stringify(mutationResult?.data)}`)
   })
 
-  it('should throw an error when required arguments are missing', async () => {
+  it('should throw an error when required inputs are missing', async () => {
+    // command variables
+    const commandVariables = {} // no variables = no required inputs
+
     // submit command
-    let mutationResult: { graphQLErrors: { message: string }[] }
     try {
-      // should expect a value for fruit
-      await testedCommand(graphQLclient, undefined)
+      await graphQLclient.mutate({
+        variables: commandVariables,
+        mutation: commandMutation,
+      })
     } catch (error) {
-      mutationResult = error
+      // evaluate command response
+      expect(error).not.toBeNull()
+      expect(error?.message).toBeTruthy()
+      console.log(`✅ [Command Required Inputs Missing] ${error?.message}`)
     }
-    // evaluate command response
-    expect(mutationResult?.graphQLErrors[0]?.message).toBeTruthy()
   })
 
-  it('should throw an error when arguments are invalid', async () => {
+  it('should throw an error when inputs values are empty', async () => {
+    // command variables
+    const commandVariables = emptyVariables
+
     // submit command
-    let mutationResult: { graphQLErrors: { message: string }[] }
     try {
-      // should expect a non-null value for fruit
-      await testedCommand(graphQLclient, '')
+      await graphQLclient.mutate({
+        variables: commandVariables,
+        mutation: commandMutation,
+      })
     } catch (error) {
-      mutationResult = error
+      // evaluate command response
+      expect(error).not.toBeNull()
+      expect(error?.message).toBeTruthy()
+      console.log(`✅ [Command Input Values Empty] ${error?.message}`)
     }
+  })
+
+  it('should throw an error when inputs are of an invalid type', async () => {
+    // command variables
+    const commandVariables = invalidDataTypeVariables
+
+    // submit command
+    try {
+      await graphQLclient.mutate({
+        variables: commandVariables,
+        mutation: commandMutation,
+      })
+    } catch (error) {
+      // evaluate command response
+      expect(error).not.toBeNull()
+      expect(error?.message).toBeTruthy()
+      console.log(`✅ [Command Input Invalid Types] ${error?.message}`)
+    }
+  })
+
+  it('should succeed when submitting only required inputs', async () => {
+    // command variables
+    const commandVariables = requiredVariables
+
+    // submit command
+    const mutationResult = await graphQLclient.mutate({
+      variables: commandVariables,
+      mutation: commandMutation,
+    })
+
     // evaluate command response
-    expect(mutationResult?.graphQLErrors[0]?.message).toBeTruthy()
+    expect(mutationResult).not.toBeNull()
+    expect(mutationResult?.data).toBeTruthy()
+    console.log(`✅ [Command Only Required Inputs] ${JSON.stringify(mutationResult?.data)}`)
   })
 
-  it('should store event in the database', async () => {
-    // event store query expects primary key that matches `entityTypeName_entityID_kind` value
+  it.todo('should do wor')
 
-    // reference values
-    const eventEntity = 'Drink'
-    const primaryKey = `${eventEntity}-${requestId}-event`
+  // it should register specific events
+  registeredEvents.forEach(async ({ input: triggeringVariables, event, reducingEntity }) => {
+    it(`should register event: ${event}`, async () => {
+      // event store query expects primary key that matches `entityTypeName_entityID_kind` value
+      const id = faker.datatype.uuid()
+      const primaryKey = `${reducingEntity}-${id}-event`
 
-    // perform action
-    await testedCommand(graphQLclient, fruit, drink, requestId)
+      // command variables
+      const commandVariables = { ...triggeringVariables, id }
 
-    // check action's effect
-    const actionResult = async (): Promise<unknown[]> => await applicationUnderTest.query.events(primaryKey)
+      // submit command
+      try {
+        await graphQLclient.mutate({
+          variables: commandVariables,
+          mutation: commandMutation,
+        })
+      } catch (error) {
+        expect(error).toBeNull()
+        console.log("💥 ERROR calling command. Check 'registeredEvents' inputs in test.")
+      }
 
-    // wait until action is processed
-    await helpers.waitForIt(
-      () => actionResult(),
-      (matches) => matches?.length > 0
-    )
+      // check action's effect
+      const actionResult = async (): Promise<unknown[]> => await applicationUnderTest.query.events(primaryKey)
 
-    // evaluate result
-    const result = (await actionResult()) as unknown as EventEnvelope[]
-    expect(result.filter((record) => record.kind === 'event')).toBeTruthy()
-  })
+      // wait until action is processed
+      await helpers.waitForIt(
+        () => actionResult(),
+        (matches) => matches?.length > 0
+      )
 
-  it('should create a snapshot after event', async () => {
-    // event store query expects primary key that matches `entityTypeName_entityID_kind` value
-
-    // reference values
-    const eventEntity = 'Drink'
-    const primaryKey = `${eventEntity}-${requestId}-snapshot`
-
-    // perform action
-    await testedCommand(graphQLclient, fruit, drink, requestId)
-
-    // check action's effect
-    const actionResult = async (): Promise<unknown[]> => await applicationUnderTest.query.events(primaryKey)
-
-    // wait until action is processed
-    await helpers.waitForIt(
-      () => actionResult(),
-      (matches) => matches?.length > 0
-    )
-
-    // evaluate result
-    const result = (await actionResult()) as unknown as EventEnvelope[]
-    expect(result.filter((record) => record.kind === 'snapshot')).toBeTruthy()
-  })
-
-  it('should update the read model after event', async () => {
-    // read model query expects primary key that matches `id` value
-
-    // perform action
-    await testedCommand(graphQLclient, fruit, drink, requestId)
-
-    // check action's effect
-    const actionResult = async (): Promise<unknown[]> =>
-      await applicationUnderTest.query.readModels(requestId as string, testedReadModel)
-
-    // wait until action is processed
-    await helpers.waitForIt(
-      () => actionResult(),
-      (matches) => matches?.length > 0
-    )
-
-    // evaluate result
-    const result = (await actionResult()) as unknown as ReadModelEnvelope[]
-    expect(result).toBeTruthy()
+      // evaluate result
+      const results = (await actionResult()) as unknown as EventEnvelope[]
+      const eventsOnly = results.filter((record) => record.kind === 'event')
+      expect(eventsOnly).toHaveLength(1)
+      console.log(`✅ [Command Registers '${event}']`)
+    })
   })
 })

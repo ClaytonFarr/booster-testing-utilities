@@ -1,0 +1,5 @@
+{"typeName":"FruitReadModel","value":{"id":"7f58b9ca-f55d-4047-b710-e06a542ca72b","fruit":"apple","orderTakenBy":"Mike","boosterMetadata":{"version":1}},"_id":"rsGSnSyaYVCJoZXn"}
+{"typeName":"DrinkReadModel","value":{"id":"7f58b9ca-f55d-4047-b710-e06a542ca72b","drink":"water","orderTakenBy":"Mike","boosterMetadata":{"version":1}},"_id":"bve6bN0uaV4nKFnO"}
+{"typeName":"FruitReadModel","value":{"id":"e5a8a6b0-74cd-42ab-9d3e-702e54687220","fruit":"candy","orderTakenBy":"Abi","boosterMetadata":{"version":1}},"_id":"o5v9MpOcjjTA2UEE"}
+{"typeName":"DrinkReadModel","value":{"id":"e5a8a6b0-74cd-42ab-9d3e-702e54687220","drink":"coke","orderTakenBy":"Abi","boosterMetadata":{"version":1}},"_id":"vFWsDQZIvJko6buO"}
+{"typeName":"TattleReadModel","value":{"id":"e5a8a6b0-74cd-42ab-9d3e-702e54687220","when":"2022-04-14T21:42:13.558Z","boosterMetadata":{"version":1}},"_id":"Ycdoqm7C2rrI7ILT"}

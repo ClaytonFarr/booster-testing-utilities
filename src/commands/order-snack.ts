@@ -21,7 +21,7 @@ export class OrderSnack {
 
     // do work
     const orderId = command.id || UUID.generate()
-    const orderTakenBy = ['John', 'Jane', 'Jack', 'Jill'][Math.floor(Math.random() * 4)]
+    const orderTakenBy = ['Cindy', 'John', 'Sue', 'Mike', 'Erik', 'Abi'][Math.floor(Math.random() * 6)]
 
     // register event
     register.events(
@@ -40,7 +40,7 @@ export class OrderSnack {
         )
       )
     }
-    if (command.fruit === 'candy') {
+    if (command.fruit.toLowerCase() === 'candy') {
       register.events(
         new CandyOrdered(
           orderId, //

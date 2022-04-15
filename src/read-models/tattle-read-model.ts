@@ -1,9 +1,10 @@
 import { ReadModel, Projects } from '@boostercloud/framework-core'
 import { UUID, ProjectionResult } from '@boostercloud/framework-types'
 import { Tattle } from '../entities/tattle'
+import { Mom } from '../roles'
 
 @ReadModel({
-  authorize: 'all',
+  authorize: [Mom],
 })
 export class TattleReadModel {
   public constructor(

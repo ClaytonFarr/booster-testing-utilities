@@ -30,11 +30,12 @@ _References_
 
 - ✅ should accept specific parameters(s)
 - ✅ should fail when required parameters are missing
+- ✅ should succeed if submitting only required parameter(s)
 - ✅ should fail if parameters values are empty ('')
 - ✅ should fail if parameters are invalid type
-- ✅ should succeed submitting only required parameter(s)
 - ✅ should register specific event(s)
-- should perform certain work
+- ✅ should perform certain work
+- 🚧 should fail if request not authorized
 
 **A Scheduled Command**
 

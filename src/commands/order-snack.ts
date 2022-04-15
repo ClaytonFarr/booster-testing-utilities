@@ -3,6 +3,7 @@ import { Command } from '@boostercloud/framework-core'
 import { FruitOrdered } from '../events/fruit-ordered'
 import { DrinkOrdered } from '../events/drink-ordered'
 import { CandyOrdered } from '../events/candy-ordered'
+// import { Mom } from '../roles'
 
 @Command({
   authorize: 'all',
@@ -22,12 +23,13 @@ export class OrderSnack {
     // do work
     const orderId = command.id || UUID.generate()
     const orderTakenBy = ['Cindy', 'John', 'Sue', 'Mike', 'Erik', 'Abi'][Math.floor(Math.random() * 6)]
+    const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 
     // register event
     register.events(
       new FruitOrdered(
         orderId, //
-        command.fruit,
+        capitalize(command.fruit),
         orderTakenBy
       )
     )
@@ -35,7 +37,7 @@ export class OrderSnack {
       register.events(
         new DrinkOrdered(
           orderId, //
-          command.drink,
+          capitalize(command.drink),
           orderTakenBy
         )
       )

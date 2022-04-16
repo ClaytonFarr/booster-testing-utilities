@@ -57,7 +57,7 @@ _References_
 
 - should project specific entity data
 
-# Testing Notes
+## Testing Notes
 
 - when testing live
   - run `npm run test:live`
@@ -66,3 +66,28 @@ _References_
     - in new terminal run `boost deploy -e test`
     - in original terminal (where tests running), press `a` to re-run tests
   - when cancel process in original terminal, should nuke deployed test stack
+
+## Testing Automation Notes
+
+@syntax is optional for test automation.
+
+**Command: Event keys**
+
+- must be first arguments in event constructor
+- must be in this order:
+  - @requiredInput: input variables required to trigger event
+  - @aReducingEntity: an entity that will be updated by event (required to lookup event in datastore)
+
+**Command: Work keys (@work00)**
+
+- can be any where in document
+- can include any unique (within document) two-digit key
+- require:
+  - @work00: brief description of work to be done
+  - @work00-inputs: input name and value (e.g. { name: 'fruit', value: 'apple' })
+    - currently presumes work can be triggered by single input parameter
+  - @work01-entity: an entity that will be updated by event (required to lookup event in datastore)
+  - @work01-result: value to test if work was done
+    - can be `true` or `false` if want to test yes/no of work done
+    - can be a string to test work result value
+      - currently presumes result value exists on field with same name as @work00-inputs `name`

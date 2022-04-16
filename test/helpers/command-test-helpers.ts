@@ -86,7 +86,7 @@ export const getAcceptedParameterNames = (expectedParameters: Parameter[]): stri
 // Generate Parameter Variable Options
 // ---------------------------------------------------------------------------------------------------------------------
 
-export const createCommandVariables = (acceptedParameters: Parameter[]): Record<string, string> => {
+export const createCommandVariableGroups = (acceptedParameters: Parameter[]): Record<string, string> => {
   return {
     allVariables: createAllVariables(acceptedParameters),
     requiredVariables: createRequiredVariables(acceptedParameters),
@@ -198,6 +198,85 @@ export interface WorkToBeDone {
   expectedResult: boolean | string | number
 }
 
+export const getWorkToBeDone = (
+  commandName: string,
+  commandFileContents?: Buffer,
+  rootPath = 'src/commands/'
+): WorkToBeDone[] => {
+  // get work comments
+  const workToBeDone: WorkToBeDone[] = []
+  const fileContents = commandFileContents || getCommandFileContents(commandName, rootPath)
+  const workComments = [...fileContents.toString().matchAll(/@work(\d+).*/g)]
+
+  // determine total number of work items (by reducing work indexes within Set)
+  const workItemCount = new Set(workComments.map(([, workGroup]) => workGroup)).size
+
+  // group comments by work item
+  const workItems = []
+  for (let i = 0; i < workItemCount; i++) {
+    const workGroupIndexRef = i.toString().length === 1 ? '0' + (i + 1).toString() : (i + 1).toString()
+    workItems.push([]) // create empty array for each work item
+    workItems[i] = workComments.filter(([, index]) => index === workGroupIndexRef)
+  }
+
+  // parse work comments for test inputs
+  workItems.forEach((workItem, i) => {
+    // create empty object for work item
+    const thisWorkToBeDone: WorkToBeDone = {
+      workToDo: '',
+      testedInputParameter: {
+        name: '',
+        value: '',
+      },
+      reducingEntity: '',
+      expectedResult: '',
+    }
+
+    // create work item ref that matches index used in comments
+    const workItemIndexRef = (i + 1).toString().length === 1 ? '0' + (i + 1).toString() : (i + 1).toString()
+
+    // parse work description (if not present, exit)
+    const workToDo = workItem
+      .filter(([statement, index]) => statement.includes(`@work${index}: `))[0][0]
+      .replace(`@work${workItemIndexRef}: `, '')
+    if (!workToDo) return
+    thisWorkToBeDone.workToDo = workToDo
+
+    // parse work input parameter (if not present, exit)
+    let testedInputParameter = workItem
+      .filter(([statement, index]) => statement.includes(`@work${index}-inputs: `))[0][0]
+      .replace(`@work${workItemIndexRef}-inputs: `, '')
+    testedInputParameter = eval('(' + testedInputParameter + ')')
+    if (!testedInputParameter) return
+    thisWorkToBeDone.testedInputParameter = testedInputParameter
+
+    // parse reducing entity (if not present, exit)
+    const reducingEntity = workItem
+      .filter(([statement, index]) => statement.includes(`@work${index}-entity: `))[0][0]
+      .replace(`@work${workItemIndexRef}-entity: `, '')
+      .replace(/'/g, '')
+      .replace(/"/g, '')
+    if (!reducingEntity) return
+    thisWorkToBeDone.reducingEntity = reducingEntity
+
+    // parse expected result (if not present, exit)
+    let expectedResult = workItem
+      .filter(([statement, index]) => statement.includes(`@work${index}-result: `))[0][0]
+      .replace(`@work${workItemIndexRef}-result: `, '')
+      .replace(/'/g, '')
+      .replace(/"/g, '')
+    if (expectedResult === 'true') expectedResult = true
+    if (expectedResult === 'false') expectedResult = false
+    if (!expectedResult) return
+    thisWorkToBeDone.expectedResult = expectedResult
+
+    // add work item to work to be done
+    workToBeDone.push(thisWorkToBeDone)
+  })
+
+  return workToBeDone
+}
+
 // export const createWorkToBeDoneTests = (
 //   additionalWorkDone: WorkToBeDone[],
 //   commandMutation: DocumentNode,
@@ -271,19 +350,46 @@ export interface RegisteredEvent {
   reducingEntity: string
 }
 
-// export const getRegisteredEvents = (
-//   commandName: string,
-//   commandFileContents?: Buffer,
-//   rootPath = 'src/commands/'
-// ): RegisteredEvent[] => {
-//   const registeredEvents: RegisteredEvent[] = []
-//   const fileContents = commandFileContents || getCommandFileContents(commandName, rootPath)
-//   const events = fileContents.toString().match(/register.events\(\n*\s*new\s*(\w*)/g)
-//   events.forEach((event) => {
+export const getRegisteredEvents = (
+  commandName: string,
+  commandFileContents?: Buffer,
+  rootPath = 'src/commands/'
+): RegisteredEvent[] => {
+  const registeredEvents: RegisteredEvent[] = []
+  const fileContents = commandFileContents || getCommandFileContents(commandName, rootPath)
+  const eventStatements = [
+    ...fileContents
+      .toString()
+      .matchAll(/register\.events\(\n*\s*new\s*(\w*)\(\n*.*\/\/\s*(@requiredInput.*)\n*.*\/\/\s*(@aReducingEntity.*)/g),
+  ]
+  eventStatements.forEach((eventString) => {
+    const thisEvent: RegisteredEvent = { input: {}, event: '', reducingEntity: '' }
 
-//   })
-//   return registeredEvents
-// }
+    // create query variable string for event
+    let inputs = {}
+    const inputString = eventString[2].replace(/@requiredInput:\s*|\s|{|}/g, '')
+    const inputGroups = inputString.split(',') // capture multiple inputs if present
+    inputGroups.forEach((input) => {
+      const thisInput = {}
+      let inputValue: string | number | boolean = input.split(':')[1].replace(/'/g, '').replace(/"/g, '')
+
+      // create suitable example value if a generic label was used
+      if (inputValue === 'string') inputValue = faker.random.word()
+      if (inputValue === 'number') inputValue = faker.datatype.number()
+      if (inputValue === 'boolean') inputValue = faker.datatype.boolean()
+      if (inputValue === 'id') inputValue = faker.datatype.uuid()
+
+      // add parameter name with value
+      thisInput[input.split(':')[0]] = inputValue
+      inputs = { ...inputs, ...thisInput }
+    })
+    thisEvent.input = inputs
+    thisEvent.event = eventString[1]
+    thisEvent.reducingEntity = eventString[3].replace(/@aReducingEntity:\s*/, '').replace(/'/g, '')
+    registeredEvents.push(thisEvent)
+  })
+  return registeredEvents
+}
 
 export const wasEventRegistered = async (
   commandMutation: DocumentNode,

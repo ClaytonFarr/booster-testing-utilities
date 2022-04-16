@@ -4,13 +4,13 @@ import * as helpers from '../helpers'
 
 // Test
 // =================================================================================================
-const commandName = 'OrderSnack'
+const commandName = 'OrderCocktail'
 
 describe(`[Auto Retrieved Data] ${helpers.pascalToTitleCase(commandName)} Command`, async () => {
   // Retrieve Test Data
   // -----------------------------------------------------------------------------------------------
   const commandFileContents = helpers.getCommandFileContents(commandName)
-  const authorizedRoles: string[] = helpers.getRoles(commandName, commandFileContents)
+  const authorizedRoles: helpers.Role[] | string[] = helpers.getRoles(commandName, commandFileContents)
   const acceptedParameters: helpers.Parameter[] = helpers.getAcceptedParameters(commandName, commandFileContents)
   const registeredEvents: helpers.RegisteredEvent[] = helpers.getRegisteredEvents(commandName, commandFileContents)
   const additionalWorkDone: helpers.WorkToBeDone[] = helpers.getWorkToBeDone(commandName, commandFileContents)

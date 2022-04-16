@@ -3,7 +3,7 @@ import type { EventEnvelope } from '@boostercloud/framework-types'
 import type { ApolloClient } from 'apollo-client'
 import type { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import type { DocumentNode } from 'graphql'
-import { applicationUnderTest, graphQLclient } from '../helpers'
+import { applicationUnderTest, unAuthGraphQLclient, authGraphQLclient } from '../helpers'
 import { describe, it, expect } from 'vitest'
 import { faker } from '@faker-js/faker'
 import { waitForIt } from '.'
@@ -28,6 +28,7 @@ export const generateCommandTests = (commandName: string): void => {
 
     // Create Test Resources
     // -----------------------------------------------------------------------------------------------
+    const graphQLclient = authorizedRoles[0] === 'all' ? unAuthGraphQLclient : authGraphQLclient(authorizedRoles[0])
     const acceptedParameterNames = getAcceptedParameterNames(acceptedParameters)
     const { allVariables, requiredVariables, emptyVariables, invalidDataTypeVariables } =
       createCommandVariableGroups(acceptedParameters)
@@ -48,7 +49,7 @@ export const generateCommandTests = (commandName: string): void => {
       createSubmitOnlyRequiredInputsTest(commandMutation, requiredVariables, graphQLclient)
 
     // It should reject EMPTY inputs
-    createRejectInvalidInputTypesTest(commandMutation, emptyVariables, graphQLclient)
+    createRejectEmptyInputsTest(commandMutation, emptyVariables, graphQLclient)
 
     // It should reject INVALID data types
     createRejectInvalidInputTypesTest(commandMutation, invalidDataTypeVariables, graphQLclient)
@@ -61,9 +62,7 @@ export const generateCommandTests = (commandName: string): void => {
     createRegisteredEventsTests(registeredEvents, commandMutation, applicationUnderTest, graphQLclient)
 
     // It should perform correct AUTHORIZATION
-    // TODO finish test methods
-    if (authorizedRoles.length > 1 && authorizedRoles.length[0] !== 'all')
-      createRolesTests(authorizedRoles as Role[], commandMutation, requiredVariables, graphQLclient)
+    if (authorizedRoles[0] !== 'all') createRolesTests(authorizedRoles, commandMutation, requiredVariables)
   })
 }
 
@@ -79,11 +78,7 @@ export interface Role {
   name: string
 }
 
-export const getRoles = (
-  commandName: string,
-  commandFileContents?: Buffer,
-  rootPath = 'src/commands/'
-): Role[] | string[] => {
+export const getRoles = (commandName: string, commandFileContents?: Buffer, rootPath = 'src/commands/'): string[] => {
   const roles = []
   const fileContents = commandFileContents || getCommandFileContents(commandName, rootPath)
   const authorizeStatement = fileContents.toString().match(/(authorize.*)/g)
@@ -103,46 +98,70 @@ export const getRoles = (
 }
 
 export const createRolesTests = (
-  authorizedRoles: Role[],
+  authorizedRoles: string[],
   commandMutation: DocumentNode,
-  requiredVariables: string,
-  graphQLclient: ApolloClient<NormalizedCacheObject>,
-  resultWaitTime = 5000
+  requiredVariables: string
 ): void => {
+  // check unauthorized request
+  it('should not allow unauthorized role to make request', async () => {
+    const check = await wasUnauthorizedRequestRejected(commandMutation, requiredVariables)
+    expect(check).toBe(true)
+    // console.log('✅ [Command Rejects Unauthorized Request]')
+  })
+
+  // check authorized request(s)
   authorizedRoles.forEach(async (role) => {
-    it(
-      `[add note]: ${role.name}`,
-      async () => {
-        const check = await wasAuthorizationAllowed(commandMutation, requiredVariables, role)
-        expect(check).toBe(true)
-        // console.log(`✅ [Command allowed '${role.name}' to make request]`)
-      },
-      resultWaitTime + 500
-    )
+    it(`should allow '${role}' role to make request`, async () => {
+      const check = await wasUnauthorizedRequestAllowed(role, commandMutation, requiredVariables)
+      expect(check).toBe(true)
+      // console.log(`✅ [Command Accepts Authorized Request for '${role.name}']`)
+    })
   })
 }
 
-export const wasAuthorizationAllowed = async (
+export const wasUnauthorizedRequestRejected = async (
   commandMutation: DocumentNode,
   requiredVariables: string,
-  role: Role
+  graphQLclient = unAuthGraphQLclient
 ): Promise<boolean> => {
   // command variables
   const commandVariables = requiredVariables
 
-  // ! TODO create/select auth'd graphQLclient for role
-  // submit command
-  // const graphQLclient = await createGraphQLClient(role)
-  // const mutationResult = await graphQLclient.mutate({
-  //   variables: commandVariables,
-  //   mutation: commandMutation,
-  // })
+  // submit command (with non-auth graphQLclient)
+  let commandRejection: Record<string, unknown>
+  try {
+    await graphQLclient.mutate({
+      variables: commandVariables,
+      mutation: commandMutation,
+    })
+  } catch (error) {
+    commandRejection = error
+  }
 
   // evaluate command response
-  // expect(mutationResult).not.toBeNull()
-  // expect(mutationResult?.data).toBeTruthy()
+  return !!commandRejection
+}
 
-  return
+export const wasUnauthorizedRequestAllowed = async (
+  role: string,
+  commandMutation: DocumentNode,
+  requiredVariables: string
+): Promise<boolean> => {
+  const roleEmail = faker.internet.email()
+  const roleToken = applicationUnderTest.token.forUser(roleEmail, role)
+  const roleGraphQLclient = applicationUnderTest.graphql.client(roleToken)
+
+  // command variables
+  const commandVariables = requiredVariables
+
+  // submit command
+  const mutationResult = await roleGraphQLclient.mutate({
+    variables: commandVariables,
+    mutation: commandMutation,
+  })
+
+  // evaluate command response
+  return !!mutationResult?.data
 }
 
 // Command Parameters
@@ -465,7 +484,8 @@ export const getWorkToBeDone = (
     let testedInputParameter = workItem
       .filter(([statement, index]) => statement.includes(`@work${index}-inputs: `))[0][0]
       .replace(`@work${workItemIndexRef}-inputs: `, '')
-    testedInputParameter = eval('(' + testedInputParameter + ')')
+    // ...convert JSON string to object
+    testedInputParameter = Function('"use strict";return (' + testedInputParameter + ')')()
     if (!testedInputParameter) return
     thisWorkToBeDone.testedInputParameter = testedInputParameter
 

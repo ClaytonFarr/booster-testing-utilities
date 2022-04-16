@@ -2,8 +2,14 @@ import { Role } from '@boostercloud/framework-core'
 
 @Role({
   auth: {
-    signUpMethods: ['email', 'phone'],
-    skipConfirmation: true,
+    signUpMethods: [],
   },
 })
 export class Mom {}
+
+@Role({
+  auth: {
+    signUpMethods: [],
+  },
+})
+export class Dad {}

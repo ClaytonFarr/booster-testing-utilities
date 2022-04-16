@@ -8,10 +8,11 @@
 - [x] check if any parts of test helpers are no longer needed
 - [x] make test work in AWS deployed environment
 - [x] check if test updates can fire vitest HMR
+- [x] abstract test patterns into reusable functions
+- [ ] re-tests in AWS deployed environment
 
 - [ ] note expectations for each element / integration
 - [ ] create test example for each type of integration
-- [ ] attempt to abstract test patterns into reusable functions
 
 - [ ] create 2nd integration test
 - [ ] sort out how to make these tests show up in coverage report

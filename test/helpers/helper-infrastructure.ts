@@ -4,6 +4,7 @@
 import { ApplicationTester, ProviderTestHelper } from '@boostercloud/application-tester'
 import { AWSTestHelper } from '@boostercloud/framework-provider-aws-infrastructure'
 import { ApolloClient } from 'apollo-client'
+import { faker } from '@faker-js/faker'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import CustomLocalTestHelper from './custom-local-test-helper/local-test-helper'
 import { testApplicationName } from '../constants'
@@ -23,10 +24,19 @@ export async function getApplicationUnderTest(): Promise<ApplicationTester> {
 }
 export const applicationUnderTest = await getApplicationUnderTest()
 
-// create graphQL client for test application
-export async function getGraphQLClient(
-  applicationUnderTest: ApplicationTester
+// create graphQL client for test
+export async function createGraphQLClient(
+  applicationUnderTest: ApplicationTester,
+  authToken?: string
 ): Promise<ApolloClient<NormalizedCacheObject>> {
-  return applicationUnderTest.graphql.client()
+  return applicationUnderTest.graphql.client(authToken)
 }
-export const graphQLclient = await getGraphQLClient(applicationUnderTest)
+
+export const unAuthGraphQLclient = await createGraphQLClient(applicationUnderTest)
+
+export const authGraphQLclient = (role: string): ApolloClient<NormalizedCacheObject> => {
+  const roleEmail = faker.internet.email()
+  const roleToken = applicationUnderTest.token.forUser(roleEmail, role)
+  const roleGraphQLclient = applicationUnderTest.graphql.client(roleToken)
+  return roleGraphQLclient
+}

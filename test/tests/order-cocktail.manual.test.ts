@@ -10,43 +10,31 @@ import * as helpers from '../helpers'
 
 // Test
 // =================================================================================================
-describe('[Manual Data + Tests] Order Snack Command', async () => {
+describe('[Manual Data + Tests] Order Cocktail Command', async () => {
   //
   // TEST SETUP
   // -----------------------------------------------------------------------------------------------
-  const commandName = 'OrderSnack'
+  const commandName = 'OrderCocktail'
 
   // Define Test Data
   // -----------------------------------------------------------------------------------------------
-  const authorizedRoles = ['all'] // optional auth roles (if 'all' or empty array, auth not tested)
+  const authorizedRoles = ['Mom', 'Dad'] // optional auth roles (if 'all' or empty array, auth not tested)
   const acceptedParameters: helpers.Parameter[] = [
-    { name: 'fruit', type: 'String', required: true },
-    { name: 'drink', type: 'String' },
+    { name: 'drink', type: 'String', required: true },
     { name: 'id', type: 'ID' },
   ]
   const registeredEvents: helpers.RegisteredEvent[] = [
-    { input: { fruit: 'apple' }, event: 'FruitOrdered', reducingEntity: 'Fruit' },
-    { input: { fruit: 'pear', drink: 'water' }, event: 'DrinkOrdered', reducingEntity: 'Drink' },
-    { input: { fruit: 'candy' }, event: 'CandyOrdered', reducingEntity: 'Tattle' },
+    { input: { drink: 'gimlet' }, event: 'DrinkOrdered', reducingEntity: 'Drink' },
   ]
   const additionalWorkDone: helpers.WorkToBeDone[] = [
     {
-      workToDo: "capitalize the 'fruit' value",
+      workToDo: "capitalize the 'drink' value",
       testedInputParameter: {
-        name: 'fruit',
-        value: 'apple',
+        name: 'drink',
+        value: 'gimlet',
       },
-      reducingEntity: 'Fruit',
-      expectedResult: 'Apple',
-    },
-    {
-      workToDo: 'tattle when candy is ordered',
-      testedInputParameter: {
-        name: 'fruit',
-        value: 'candy',
-      },
-      reducingEntity: 'Tattle',
-      expectedResult: true,
+      reducingEntity: 'Drink',
+      expectedResult: 'Gimlet',
     },
   ]
 

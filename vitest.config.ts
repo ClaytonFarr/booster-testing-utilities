@@ -11,10 +11,6 @@ export default defineConfig({
       exclude: ['src/index.ts', 'src/constants.ts', 'src/roles.ts', 'src/config', 'src/common/types'],
     },
     globalSetup: ['test/globalSetup.ts'], // will run before/after *all* tests
-    // deps: {
-    // inline: ['test/helpers/command-test-helpers.ts'],
-    // inline: [/test\/helpers\/(.*)\.ts/],
-    // },
     // setupFiles: ['test/setup.ts'], // will run before *each* test file
   },
 })

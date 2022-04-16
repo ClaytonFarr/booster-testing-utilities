@@ -3,15 +3,69 @@ import type { EventEnvelope } from '@boostercloud/framework-types'
 import type { ApolloClient } from 'apollo-client'
 import type { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import type { DocumentNode } from 'graphql'
-// import { it, expect } from 'vitest'
+import { applicationUnderTest, graphQLclient } from '../helpers'
+import { describe, it, expect } from 'vitest'
 import { faker } from '@faker-js/faker'
-import { waitForIt } from '../helpers'
+import { waitForIt } from '.'
 import gql from 'graphql-tag'
 import path from 'path'
 import fs from 'fs'
 
-// Common
+// General
 // =====================================================================================================================
+
+export const generateCommandTests = (commandName: string): void => {
+  const commandNameReadable = commandName.replace(/([a-z])([A-Z])/g, '$1 $2')
+
+  describe(`[Auto-Generated Tests] ${commandNameReadable} Command`, async () => {
+    // Retrieve Test Data
+    // -----------------------------------------------------------------------------------------------
+    const commandFileContents = getCommandFileContents(commandName)
+    const authorizedRoles: Role[] | string[] = getRoles(commandName, commandFileContents)
+    const acceptedParameters: Parameter[] = getAcceptedParameters(commandName, commandFileContents)
+    const registeredEvents: RegisteredEvent[] = getRegisteredEvents(commandName, commandFileContents)
+    const additionalWorkDone: WorkToBeDone[] = getWorkToBeDone(commandName, commandFileContents)
+
+    // Create Test Resources
+    // -----------------------------------------------------------------------------------------------
+    const acceptedParameterNames = getAcceptedParameterNames(acceptedParameters)
+    const { allVariables, requiredVariables, emptyVariables, invalidDataTypeVariables } =
+      createCommandVariableGroups(acceptedParameters)
+    const commandMutation = createCommandMutation(commandName, acceptedParameters)
+
+    // TESTS
+    // -----------------------------------------------------------------------------------------------
+
+    // It should accept ALL PARAMETERS
+    createAcceptAllParametersTest(commandMutation, allVariables, acceptedParameterNames, graphQLclient)
+
+    // It should fail if MISSING REQUIRED input(s)
+    if (acceptedParameters.filter((param) => param.required).length > 0)
+      createMissingRequiredInputTest(commandMutation, graphQLclient)
+
+    // It should succeed with ONLY REQUIRED input(s)
+    if (acceptedParameters.filter((param) => param.required).length > 0)
+      createSubmitOnlyRequiredInputsTest(commandMutation, requiredVariables, graphQLclient)
+
+    // It should reject EMPTY inputs
+    createRejectInvalidInputTypesTest(commandMutation, emptyVariables, graphQLclient)
+
+    // It should reject INVALID data types
+    createRejectInvalidInputTypesTest(commandMutation, invalidDataTypeVariables, graphQLclient)
+
+    // It should possibly do specific WORK
+    if (additionalWorkDone.length > 0)
+      createWorkToBeDoneTests(additionalWorkDone, commandMutation, applicationUnderTest, graphQLclient)
+
+    // It should register specific EVENTS
+    createRegisteredEventsTests(registeredEvents, commandMutation, applicationUnderTest, graphQLclient)
+
+    // It should perform correct AUTHORIZATION
+    // TODO finish test methods
+    if (authorizedRoles.length > 1 && authorizedRoles.length[0] !== 'all')
+      createRolesTests(authorizedRoles as Role[], commandMutation, requiredVariables, graphQLclient)
+  })
+}
 
 export const getCommandFileContents = (commandName: string, rootPath = 'src/commands/'): Buffer => {
   const commandNameKebabCase = commandName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
@@ -21,7 +75,15 @@ export const getCommandFileContents = (commandName: string, rootPath = 'src/comm
 // Command Roles
 // =====================================================================================================================
 
-export const getRoles = (commandName: string, commandFileContents?: Buffer, rootPath = 'src/commands/'): string[] => {
+export interface Role {
+  name: string
+}
+
+export const getRoles = (
+  commandName: string,
+  commandFileContents?: Buffer,
+  rootPath = 'src/commands/'
+): Role[] | string[] => {
   const roles = []
   const fileContents = commandFileContents || getCommandFileContents(commandName, rootPath)
   const authorizeStatement = fileContents.toString().match(/(authorize.*)/g)
@@ -38,6 +100,49 @@ export const getRoles = (commandName: string, commandFileContents?: Buffer, root
   // return roles
   roleNames.forEach((roleName) => roles.push(roleName))
   return roles
+}
+
+export const createRolesTests = (
+  authorizedRoles: Role[],
+  commandMutation: DocumentNode,
+  requiredVariables: string,
+  graphQLclient: ApolloClient<NormalizedCacheObject>,
+  resultWaitTime = 5000
+): void => {
+  authorizedRoles.forEach(async (role) => {
+    it(
+      `[add note]: ${role.name}`,
+      async () => {
+        const check = await wasAuthorizationAllowed(commandMutation, requiredVariables, role)
+        expect(check).toBe(true)
+        // console.log(`✅ [Command allowed '${role.name}' to make request]`)
+      },
+      resultWaitTime + 500
+    )
+  })
+}
+
+export const wasAuthorizationAllowed = async (
+  commandMutation: DocumentNode,
+  requiredVariables: string,
+  role: Role
+): Promise<boolean> => {
+  // command variables
+  const commandVariables = requiredVariables
+
+  // ! TODO create/select auth'd graphQLclient for role
+  // submit command
+  // const graphQLclient = await createGraphQLClient(role)
+  // const mutationResult = await graphQLclient.mutate({
+  //   variables: commandVariables,
+  //   mutation: commandMutation,
+  // })
+
+  // evaluate command response
+  // expect(mutationResult).not.toBeNull()
+  // expect(mutationResult?.data).toBeTruthy()
+
+  return
 }
 
 // Command Parameters
@@ -146,6 +251,120 @@ export const createInvalidDataTypeVariables = (expectedParameters: Parameter[]):
     .join(', ')
     .replace(/^(.*)$/, '{ $1 }')
   return JSON.parse(variables)
+}
+
+// Parameter Tests
+// ---------------------------------------------------------------------------------------------------------------------
+
+export const createAcceptAllParametersTest = (
+  commandMutation: DocumentNode,
+  allVariables: string,
+  acceptedParameterNames: string[],
+  graphQLclient: ApolloClient<NormalizedCacheObject>
+): void => {
+  it(`should accept the parameters: ${acceptedParameterNames.join(', ')}`, async () => {
+    // command variables
+    const commandVariables = allVariables
+
+    // submit command
+    const mutationResult = await graphQLclient.mutate({
+      variables: commandVariables,
+      mutation: commandMutation,
+    })
+
+    // evaluate command response
+    expect(mutationResult).not.toBeNull()
+    expect(mutationResult?.data).toBeTruthy()
+    // console.log(`✅ [Command Accepts Expected Params] ${JSON.stringify(mutationResult?.data)}`)
+  })
+}
+
+export const createMissingRequiredInputTest = (
+  commandMutation: DocumentNode,
+  graphQLclient: ApolloClient<NormalizedCacheObject>
+): void => {
+  it('should throw an error when required inputs are missing', async () => {
+    // command variables
+    const commandVariables = {} // no variables = no required inputs
+    // submit command
+    try {
+      await graphQLclient.mutate({
+        variables: commandVariables,
+        mutation: commandMutation,
+      })
+    } catch (error) {
+      // evaluate command response
+      expect(error).not.toBeNull()
+      expect(error?.message).toBeTruthy()
+      // console.log(`✅ [Command Required Inputs Missing] ${error?.message}`)
+    }
+  })
+}
+
+export const createSubmitOnlyRequiredInputsTest = (
+  commandMutation: DocumentNode,
+  requiredVariables: string,
+  graphQLclient: ApolloClient<NormalizedCacheObject>
+): void => {
+  it('should succeed when submitting only required inputs', async () => {
+    // command variables
+    const commandVariables = requiredVariables
+    // submit command
+    const mutationResult = await graphQLclient.mutate({
+      variables: commandVariables,
+      mutation: commandMutation,
+    })
+    // evaluate command response
+    expect(mutationResult).not.toBeNull()
+    expect(mutationResult?.data).toBeTruthy()
+    // console.log(`✅ [Command Only Required Inputs] ${JSON.stringify(mutationResult?.data)}`)
+  })
+}
+
+export const createRejectEmptyInputsTest = (
+  commandMutation: DocumentNode,
+  emptyVariables: string,
+  graphQLclient: ApolloClient<NormalizedCacheObject>
+): void => {
+  it('should throw an error when inputs values are empty', async () => {
+    // command variables
+    const commandVariables = emptyVariables
+    // submit command
+    try {
+      await graphQLclient.mutate({
+        variables: commandVariables,
+        mutation: commandMutation,
+      })
+    } catch (error) {
+      // evaluate command response
+      expect(error).not.toBeNull()
+      expect(error?.message).toBeTruthy()
+      // console.log(`✅ [Command Input Values Empty] ${error?.message}`)
+    }
+  })
+}
+
+export const createRejectInvalidInputTypesTest = (
+  commandMutation: DocumentNode,
+  invalidDataTypeVariables: string,
+  graphQLclient: ApolloClient<NormalizedCacheObject>
+): void => {
+  it('should throw an error when inputs are of an invalid type', async () => {
+    // command variables
+    const commandVariables = invalidDataTypeVariables
+    // submit command
+    try {
+      await graphQLclient.mutate({
+        variables: commandVariables,
+        mutation: commandMutation,
+      })
+    } catch (error) {
+      // evaluate command response
+      expect(error).not.toBeNull()
+      expect(error?.message).toBeTruthy()
+      // console.log(`✅ [Command Input Invalid Types] ${error?.message}`)
+    }
+  })
 }
 
 // Command Mutation
@@ -277,25 +496,25 @@ export const getWorkToBeDone = (
   return workToBeDone
 }
 
-// export const createWorkToBeDoneTests = (
-//   additionalWorkDone: WorkToBeDone[],
-//   commandMutation: DocumentNode,
-//   applicationUnderTest: ApplicationTester,
-//   graphQLclient: ApolloClient<NormalizedCacheObject>,
-//   resultWaitTime = 5000
-// ): void => {
-//   additionalWorkDone.forEach(async (work) => {
-//     it(
-//       `should do the work to: ${work.workToDo}`,
-//       async () => {
-//         const check = await wasWorkDone(commandMutation, work, applicationUnderTest, graphQLclient)
-//         expect(check).toBe(true)
-//         console.log(`✅ [Command does work: ${work.workToDo}]`)
-//       },
-//       resultWaitTime + 500
-//     )
-//   })
-// }
+export const createWorkToBeDoneTests = (
+  workToBeDone: WorkToBeDone[],
+  commandMutation: DocumentNode,
+  applicationUnderTest: ApplicationTester,
+  graphQLclient: ApolloClient<NormalizedCacheObject>,
+  resultWaitTime = 5000
+): void => {
+  workToBeDone.forEach(async (work) => {
+    it(
+      `should do the work to: ${work.workToDo}`,
+      async () => {
+        const check = await wasWorkDone(commandMutation, work, applicationUnderTest, graphQLclient)
+        expect(check).toBe(true)
+        // console.log(`✅ [Command does work: ${work.workToDo}]`)
+      },
+      resultWaitTime + 500
+    )
+  })
+}
 
 export const wasWorkDone = async (
   commandMutation: DocumentNode,
@@ -341,7 +560,7 @@ export const wasWorkDone = async (
   return evaluationResult
 }
 
-// Registered Events
+// Command Registered Events
 // =====================================================================================================================
 
 export interface RegisteredEvent {
@@ -389,6 +608,26 @@ export const getRegisteredEvents = (
     registeredEvents.push(thisEvent)
   })
   return registeredEvents
+}
+
+export const createRegisteredEventsTests = (
+  registeredEvents: RegisteredEvent[],
+  commandMutation: DocumentNode,
+  applicationUnderTest: ApplicationTester,
+  graphQLclient: ApolloClient<NormalizedCacheObject>,
+  resultWaitTime = 5000
+): void => {
+  registeredEvents.forEach(async (event) => {
+    it(
+      `should register the event: ${event.event}`,
+      async () => {
+        const check = await wasEventRegistered(commandMutation, event, applicationUnderTest, graphQLclient)
+        expect(check).toBe(true)
+        // console.log(`✅ [Command registers event: ${event.event}]`)
+      },
+      resultWaitTime + 500
+    )
+  })
 }
 
 export const wasEventRegistered = async (

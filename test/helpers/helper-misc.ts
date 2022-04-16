@@ -41,3 +41,6 @@ export async function waitForIt<TResult>(
     return doWaitFor()
   }
 }
+
+export const pascalToTitleCase = (str: string): string => str.replace(/([a-z])([A-Z])/g, '$1 $2')
+export const camelToKebabCase = (str: string): string => str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()

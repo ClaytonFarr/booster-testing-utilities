@@ -10,11 +10,13 @@
 - [x] check if test updates can fire vitest HMR
 - [x] abstract test patterns into reusable functions
 - [x] create 2nd integration test
+- [x] note expectations for each element
 
-- [ ] re-tests in AWS deployed environment
-- [ ] note expectations for each element / integration
-- [ ] create test example for each type of integration
-- [ ] sort out how to make these tests show up in coverage report
+- [ ] note expectations / effects for a process
+- [ ] check tests in AWS environment
+- [ ] create test example for each type of element
+- [ ] sort out how to make tests show up in coverage report
+- [ ] draft public readme
 
 _References_
 
@@ -25,6 +27,10 @@ _References_
 - leaning on Booster framework tests for core functionality coverage (e.g. commands processing successfully, events reducing into entities, entities projecting into read models, etc.)
 
 # Test Patterns
+
+**A Process**
+
+- should ...
 
 **A Command**
 
@@ -39,33 +45,44 @@ _References_
 
 **A Scheduled Command**
 
-- xxx
+- should be called at specific time(s)
+- ⏩ should accept specific parameters(s)
+- ⏩ should fail when required parameters are missing
+- ⏩ should succeed if submitting only required parameter(s)
+- ⏩ should fail if parameters values are empty ('')
+- ⏩ should fail if parameters are invalid type
+- ⏩ should perform certain work
+- ⏩ should register specific event(s)
 
 **An Event Handler**
 
-- should perform correct authorization
-- should be called when specific event is emitted
-- should accept specific parameters(s)
-- should fail when required parameters are missing
-- should succeed if submitting only required parameter(s)
-- should fail if parameters values are empty ('')
-- should fail if parameters are invalid type
-- should perform certain work
-- should register specific event(s)
+- should be called when a specific event is emitted
+- ⏩ should accept specific parameters(s)
+- ⏩ should fail when required parameters are missing
+- ⏩ should succeed if submitting only required parameter(s)
+- ⏩ should fail if parameters values are empty ('')
+- ⏩ should fail if parameters are invalid type
+- ⏩ should perform certain work
+- ⏩ should register specific event(s)
 
 **An Event**
 
-- should update specific entity(ies)
+- should have specific parameters(s)
+- ? should update specific entity(ies)
 
 **An Entity**
 
-- may update specific read model(s)
+- should have specific parameters(s)
+- should reduce specific event(s)
+- ? may update specific read model(s)
 
 **A Read Model**
 
-- should project entity public data
-- should NOT project entity private data
-
+- ⏩ should perform correct authorization
+- ⏩ should accept specific parameters(s)
+- should project specific entity(ies)
+- should project entity's public data
+- should NOT project entity's private data
 
 ## Testing Notes
 

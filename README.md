@@ -9,12 +9,11 @@
 - [x] make test work in AWS deployed environment
 - [x] check if test updates can fire vitest HMR
 - [x] abstract test patterns into reusable functions
-- [ ] re-tests in AWS deployed environment
+- [x] create 2nd integration test
 
+- [ ] re-tests in AWS deployed environment
 - [ ] note expectations for each element / integration
 - [ ] create test example for each type of integration
-
-- [ ] create 2nd integration test
 - [ ] sort out how to make these tests show up in coverage report
 
 _References_
@@ -36,7 +35,7 @@ _References_
 - ✅ should fail if parameters are invalid type
 - ✅ should register specific event(s)
 - ✅ should perform certain work
-- 🚧 should fail if request not authorized
+- ✅ should perform
 
 **A Scheduled Command**
 
@@ -56,7 +55,9 @@ _References_
 
 **A Read Model**
 
-- should project specific entity data
+- should project entity public data
+- should NOT project entity private data
+
 
 ## Testing Notes
 

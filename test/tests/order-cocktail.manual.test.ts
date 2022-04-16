@@ -51,6 +51,49 @@ describe('[Manual Data + Tests] Order Cocktail Command', async () => {
   // TESTS
   // -----------------------------------------------------------------------------------------------
 
+  // It should perform correct AUTHORIZATION
+  // -----------------------------------------------------------------------------------------------
+  if (authorizedRoles[0] !== 'all') {
+    it('should not allow unauthorized role to make request', async () => {
+      // command variables
+      const commandVariables = requiredVariables
+
+      // submit command (with non-auth graphQLclient)
+      try {
+        await graphQLclient.mutate({
+          variables: commandVariables,
+          mutation: commandMutation,
+        })
+      } catch (error) {
+        // evaluate command response
+        expect(error).not.toBeNull()
+        // console.log('✅ [Command Rejects Unauthorized Request]')
+      }
+    })
+
+    authorizedRoles.forEach(async (role) => {
+      it(`should allow '${role}' role to make request`, async () => {
+        const roleEmail = faker.internet.email()
+        const roleToken = applicationUnderTest.token.forUser(roleEmail, role)
+        const roleGraphQLclient = applicationUnderTest.graphql.client(roleToken)
+
+        // command variables
+        const commandVariables = requiredVariables
+
+        // submit command
+        const mutationResult = await roleGraphQLclient.mutate({
+          variables: commandVariables,
+          mutation: commandMutation,
+        })
+
+        // evaluate command response
+        expect(mutationResult).not.toBeNull()
+        expect(mutationResult?.data).toBeTruthy()
+        // console.log(`✅ [Command Accepts Authorized Request for '${role}']`)
+      })
+    })
+  }
+
   // It should accept ALL PARAMETERS
   // -----------------------------------------------------------------------------------------------
   it(`should accept the parameters: ${acceptedParameterNames.join(', ')}`, async () => {
@@ -266,48 +309,5 @@ describe('[Manual Data + Tests] Order Cocktail Command', async () => {
     const results = (await actionResult()) as unknown as EventEnvelope[]
     const eventsOnly = results.filter((record) => record.kind === 'event')
     return eventsOnly.length > 0
-  }
-
-  // It should perform correct AUTHORIZATION
-  // -----------------------------------------------------------------------------------------------
-  if (authorizedRoles[0] !== 'all') {
-    it('should not allow unauthorized role to make request', async () => {
-      // command variables
-      const commandVariables = requiredVariables
-
-      // submit command (with non-auth graphQLclient)
-      try {
-        await graphQLclient.mutate({
-          variables: commandVariables,
-          mutation: commandMutation,
-        })
-      } catch (error) {
-        // evaluate command response
-        expect(error).not.toBeNull()
-        // console.log('✅ [Command Rejects Unauthorized Request]')
-      }
-    })
-
-    authorizedRoles.forEach(async (role) => {
-      it(`should allow '${role}' role to make request`, async () => {
-        const roleEmail = faker.internet.email()
-        const roleToken = applicationUnderTest.token.forUser(roleEmail, role)
-        const roleGraphQLclient = applicationUnderTest.graphql.client(roleToken)
-
-        // command variables
-        const commandVariables = requiredVariables
-
-        // submit command
-        const mutationResult = await roleGraphQLclient.mutate({
-          variables: commandVariables,
-          mutation: commandMutation,
-        })
-
-        // evaluate command response
-        expect(mutationResult).not.toBeNull()
-        expect(mutationResult?.data).toBeTruthy()
-        // console.log(`✅ [Command Accepts Authorized Request for '${role}']`)
-      })
-    })
   }
 })

@@ -28,14 +28,14 @@ _References_
 
 **A Command**
 
+- ✅ should perform correct authorization
 - ✅ should accept specific parameters(s)
 - ✅ should fail when required parameters are missing
 - ✅ should succeed if submitting only required parameter(s)
 - ✅ should fail if parameters values are empty ('')
 - ✅ should fail if parameters are invalid type
-- ✅ should register specific event(s)
 - ✅ should perform certain work
-- ✅ should perform
+- ✅ should register specific event(s)
 
 **A Scheduled Command**
 
@@ -43,7 +43,15 @@ _References_
 
 **An Event Handler**
 
-- xxx
+- should perform correct authorization
+- should be called when specific event is emitted
+- should accept specific parameters(s)
+- should fail when required parameters are missing
+- should succeed if submitting only required parameter(s)
+- should fail if parameters values are empty ('')
+- should fail if parameters are invalid type
+- should perform certain work
+- should register specific event(s)
 
 **An Event**
 

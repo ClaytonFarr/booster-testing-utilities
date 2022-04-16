@@ -26,6 +26,9 @@ describe(`[Auto Retrieved Data] ${helpers.pascalToTitleCase(commandName)} Comman
   // TESTS
   // -----------------------------------------------------------------------------------------------
 
+  // It should perform correct AUTHORIZATION
+  if (authorizedRoles[0] !== 'all') helpers.createRolesTests(authorizedRoles, commandMutation, requiredVariables)
+
   // It should accept ALL PARAMETERS
   helpers.createAcceptAllParametersTest(commandMutation, allVariables, acceptedParameterNames, graphQLclient)
 
@@ -49,7 +52,4 @@ describe(`[Auto Retrieved Data] ${helpers.pascalToTitleCase(commandName)} Comman
 
   // It should register specific EVENTS
   helpers.createRegisteredEventsTests(registeredEvents, commandMutation, applicationUnderTest, graphQLclient)
-
-  // It should perform correct AUTHORIZATION
-  if (authorizedRoles[0] !== 'all') helpers.createRolesTests(authorizedRoles, commandMutation, requiredVariables)
 })

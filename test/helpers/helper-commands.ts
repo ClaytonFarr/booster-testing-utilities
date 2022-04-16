@@ -37,6 +37,9 @@ export const generateCommandTests = (commandName: string): void => {
     // TESTS
     // -----------------------------------------------------------------------------------------------
 
+    // It should perform correct AUTHORIZATION
+    if (authorizedRoles[0] !== 'all') createRolesTests(authorizedRoles, commandMutation, requiredVariables)
+
     // It should accept ALL PARAMETERS
     createAcceptAllParametersTest(commandMutation, allVariables, acceptedParameterNames, graphQLclient)
 
@@ -60,9 +63,6 @@ export const generateCommandTests = (commandName: string): void => {
 
     // It should register specific EVENTS
     createRegisteredEventsTests(registeredEvents, commandMutation, applicationUnderTest, graphQLclient)
-
-    // It should perform correct AUTHORIZATION
-    if (authorizedRoles[0] !== 'all') createRolesTests(authorizedRoles, commandMutation, requiredVariables)
   })
 }
 

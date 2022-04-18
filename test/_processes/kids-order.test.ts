@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 
 describe('Suite...', async () => {
-  // anyone should be able to submit an order for
+  // ORDER SNACK
+  // anyone should be able to submit
   // - a fruit
   // - an optional drink
   // app should do work to
@@ -19,35 +20,89 @@ describe('Suite...', async () => {
   // Mom should be able to view
   // - when candy was requested
 
-  // anyone should be able to submit
+  // INSTALL APPLICATION
+  // <anyone> should be able to SUBMIT
   // - a Hubspot install code
-  // app should do work to
-  // - check if install code is valid
-  // - if valid,
-  //   - retrieve Hubspot auth tokens
-  //   - retrieve meta data for Hubspot account (account ID & email)
-  //   - create or reactivate an account for the user
-  //   - ...
-  // app should track
-  // - Hubspot auth tokens
-  // - Hubspot account ID
-  // - Hubspot email
-  // user should be able to view
-  // - ...
+  // app should DO WORK to
+  // - attempt to exchange code for connection's auth tokens
+  //   & retrieve Hubspot ID & email from received token
+  // - create or update <connection> with received ID and auth tokens
+  // - create or update <account> for user with Hubspot ID & email
+  // - if new account, create <scoring model> with default values
+  // app should TRACK
+  // - <connection>: auth tokens & ID
+  // - <account>: Hubspot ID (as account ID) & email
+  // - <scoring model>: measured parameters & weights
+  // <user> should be able to VIEW
+  // - nothing
 
-  // anyone should be able to submit
-  // - a Hubspot install code
-  // app should do work to
-  // - attempt to exchange code with Hubspot for auth tokens
-  // - attempt to retrieve meta data from token (Hubspot ID & email)
-  // - attempt to retrieve account's current contacts
-  //   - ...
-  // app should track/know
-  // - Hubspot auth tokens
-  // - Hubspot account ID
-  // - Hubspot email
-  // user should be able to view/access
-  // - ...
+  // UPDATE SCORING MODEL
+  // <user> should be able to SUBMIT
+  // - update to model parameters
+  // - update to model parameters' weights
+  // app should DO WORK to
+  // - update <scoring model> with new parameters and weights
+  // app should TRACK
+  // - <scoring model>: parameters & weights
+  // <user> should be able to VIEW
+  // - <scoring model>: parameters & weights
+
+  // CREATE NEW SCORING MODEL
+  // <user> should be able to SUBMIT
+  // - model name
+  // - model description
+  // - model parameters
+  // - model parameters' weights
+  // app should DO WORK to
+  // - create <scoring model> with submitted parameters & weights
+  // app should TRACK
+  // - <scoring model>: parameters & weights
+  // <user> should be able to VIEW
+  // - <scoring model>: parameters & weights
+
+  // ARCHIVE SCORING MODEL
+  // <user> should be able to SUBMIT
+  // - selected model
+  // app should DO WORK to
+  // - archive selected <scoring model>
+  // app should TRACK
+  // - <scoring model>: status
+  // <user> should be able to VIEW
+  // - request result
+
+  // DELETE SCORING MODEL
+  // <user> should be able to SUBMIT
+  // - selected model
+  // app should DO WORK to
+  // - delete selected <scoring model>
+  // <user> should be able to VIEW
+  // - request result
+
+  // CALCULATE CONTACT SCORES
+  // each <day> should SUBMIT
+  // - request to calculate scores for all contacts
+  // <user> should be able to SUBMIT
+  // - request to calculate score(s) for 1 or all contacts
+  // app should DO WORK to
+  // - retrieve all contacts for account from Hubspot
+  // - calculate score(s) for each <contact> using saved <scoring models>
+  // - update contact's scores in Hubspot
+  // - send <notification> to user when scoring completed
+  // app should TRACK
+  // - <contacts>: Hubspot ID, score(s)
+  // - <notification>: request, result, dateTime
+  // <user> should be able to VIEW
+  // - request result
+
+  // VIEW CONTACT SCORES
+  // <user> should be able to SUBMIT
+  // - request to view score(s) for 1 or all contacts
+  // app should DO WORK to
+  // - retrieve scores for submitted <contacts>
+  // app should TRACK
+  // - <contacts>: Hubspot ID, score(s)
+  // <user> should be able to VIEW
+  // - contact score(s)
 
   it('Test...', async () => {
     const thing = true

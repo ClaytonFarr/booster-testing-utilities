@@ -19,8 +19,10 @@ describe(`[Inferred Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
   // -----------------------------------------------------------------------------------------------
   const graphQLclient = authorizedRoles[0] === 'all' ? unAuthGraphQLclient : authGraphQLclient(authorizedRoles[0])
   const acceptedParameterNames = helpers.getAcceptedParameterNames(acceptedParameters)
-  const { allVariables, requiredVariables, emptyVariables, invalidDataTypeVariables } =
-    helpers.createCommandVariableGroups(acceptedParameters)
+  const allVariables = helpers.createAllVariables(acceptedParameters)
+  const requiredVariables = helpers.createRequiredVariables(acceptedParameters)
+  const emptyVariables = helpers.createEmptyVariables(acceptedParameters)
+  const invalidDataTypeVariables = helpers.createInvalidDataTypeVariables(acceptedParameters)
   const commandMutation = helpers.createCommandMutation(commandName, acceptedParameters)
 
   // TESTS

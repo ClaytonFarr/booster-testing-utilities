@@ -19,6 +19,7 @@ export class OrderCocktail {
     const orderId = command.id || UUID.generate()
     const orderTakenBy = ['Erik', 'Abi'][Math.floor(Math.random() * 2)]
 
+    // do work
     // @work01: capitalize the 'drink' value
     const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 

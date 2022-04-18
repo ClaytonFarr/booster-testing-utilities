@@ -12,8 +12,8 @@
 - [x] create 2nd integration test
 - [x] note expectations for each element
 - [x] check tests in AWS environment
+- [x] note expectations / effects for a process
 
-- [ ] note expectations / effects for a process
 - [ ] draft public readme
 - [ ] create test example for each type of element
 - [ ] review unit test examples: https://github.com/boostercloud/booster/tree/main/packages/framework-core/test

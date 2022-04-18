@@ -10,47 +10,31 @@ import * as helpers from '../test-helpers'
 
 // Test
 // =================================================================================================
-describe('[Explicit Data + Tests] Order Snack Command', async () => {
+describe('[Explicit Data + Helper Methods] Order Cocktail Command', async () => {
   //
   // TEST SETUP
   // -----------------------------------------------------------------------------------------------
-  const commandName = 'OrderSnack'
+  const commandName = 'OrderCocktail'
 
   // Define Test Data
   // -----------------------------------------------------------------------------------------------
-  const authorizedRoles = ['all'] // optional auth roles (if 'all' or empty array, auth not tested)
+  const authorizedRoles = ['Mom', 'Dad'] // optional auth roles (if 'all' or empty array, auth not tested)
   const acceptedParameters: helpers.Parameter[] = [
-    { name: 'fruit', type: 'String', required: true },
-    { name: 'drink', type: 'String' },
+    { name: 'drink', type: 'String', required: true },
     { name: 'id', type: 'ID' },
   ]
   const registeredEvents: helpers.RegisteredEvent[] = [
-    // event, the command input required to register it, and one of events reducing entities (to evaluate result)
-    { input: { fruit: 'apple' }, event: 'FruitOrdered', reducingEntity: 'Fruit' },
-    { input: { fruit: 'pear', drink: 'water' }, event: 'DrinkOrdered', reducingEntity: 'Drink' },
-    { input: { fruit: 'candy' }, event: 'CandyOrdered', reducingEntity: 'Tattle' },
+    { input: { drink: 'gimlet' }, event: 'DrinkOrdered', reducingEntity: 'Drink' },
   ]
-  const workToBeDone: helpers.WorkToBeDone[] = [
+  const workToDeDone: helpers.WorkToBeDone[] = [
     {
-      workToDo: "capitalize the 'fruit' value",
-      // command input that should trigger the work (currently only one input is supported by test method below)
+      workToDo: "capitalize the 'drink' value",
       testedInputParameter: {
-        name: 'fruit',
-        value: 'apple',
+        name: 'drink',
+        value: 'gimlet',
       },
-      // entity to evaluate work done
-      reducingEntity: 'Fruit',
-      // expected result if work done (currently presumes entity field name matches input parameter name)
-      expectedResult: 'Apple',
-    },
-    {
-      workToDo: 'tattle when candy is ordered',
-      testedInputParameter: {
-        name: 'fruit',
-        value: 'candy',
-      },
-      reducingEntity: 'Tattle',
-      expectedResult: true,
+      reducingEntity: 'Drink',
+      expectedResult: 'Gimlet',
     },
   ]
 
@@ -58,8 +42,10 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
   // -----------------------------------------------------------------------------------------------
   const graphQLclient = authorizedRoles[0] === 'all' ? unAuthGraphQLclient : authGraphQLclient(authorizedRoles[0])
   const acceptedParameterNames = helpers.getAcceptedParameterNames(acceptedParameters)
-  const { allVariables, requiredVariables, emptyVariables, invalidDataTypeVariables } =
-    helpers.createCommandVariableGroups(acceptedParameters)
+  const allVariables = helpers.createAllVariables(acceptedParameters)
+  const requiredVariables = helpers.createRequiredVariables(acceptedParameters)
+  const emptyVariables = helpers.createEmptyVariables(acceptedParameters)
+  const invalidDataTypeVariables = helpers.createInvalidDataTypeVariables(acceptedParameters)
   const commandMutation = helpers.createCommandMutation(commandName, acceptedParameters)
   const resultWaitTime = 5000
 
@@ -212,8 +198,8 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
 
   // It should do specific WORK
   // -----------------------------------------------------------------------------------------------
-  if (workToBeDone.length > 0) {
-    workToBeDone.forEach(async (work) => {
+  if (workToDeDone.length > 0) {
+    workToDeDone.forEach(async (work) => {
       it(
         `should do the work to: ${work.workToDo}`,
         async () => {

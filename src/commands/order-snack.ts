@@ -10,7 +10,7 @@ import { CandyOrdered } from '../events/candy-ordered'
 export class OrderSnack {
   public constructor(
     readonly fruit: string,
-    readonly drink?: string,
+    readonly drink?: string, // @validExample: 'water'
     readonly id?: UUID // an optional ID param is included for tests
   ) {}
 
@@ -18,10 +18,12 @@ export class OrderSnack {
     // check inputs
     if (!command.fruit || command.fruit === '') throw new Error('A fruit is required.')
     if (command.drink === '') throw new Error('If you want a drink, please tell us which type.')
+    if (command.drink && command.drink !== 'water') throw new Error('How about some water instead?')
 
     const orderId = command.id || UUID.generate()
     const orderTakenBy = ['Cindy', 'John', 'Sue', 'Mike', 'Erik', 'Abi'][Math.floor(Math.random() * 6)]
 
+    // do work
     // @work01: capitalize the 'fruit' value
     const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 

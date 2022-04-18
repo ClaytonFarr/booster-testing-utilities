@@ -30,39 +30,41 @@ export const generateCommandTests = (commandName: string): void => {
     // -----------------------------------------------------------------------------------------------
     const graphQLclient = authorizedRoles[0] === 'all' ? unAuthGraphQLclient : authGraphQLclient(authorizedRoles[0])
     const acceptedParameterNames = getAcceptedParameterNames(acceptedParameters)
-    const { allVariables, requiredVariables, emptyVariables, invalidDataTypeVariables } =
-      createCommandVariableGroups(acceptedParameters)
+    const allVariables = createAllVariables(acceptedParameters)
+    const requiredVariables = createRequiredVariables(acceptedParameters)
+    const emptyVariables = createEmptyVariables(acceptedParameters)
+    const invalidDataTypeVariables = createInvalidDataTypeVariables(acceptedParameters)
     const commandMutation = createCommandMutation(commandName, acceptedParameters)
 
     // TESTS
     // -----------------------------------------------------------------------------------------------
 
     // It should perform correct AUTHORIZATION
-    if (authorizedRoles[0] !== 'all') createRolesTests(authorizedRoles, commandMutation, requiredVariables)
+    // if (authorizedRoles[0] !== 'all') createRolesTests(authorizedRoles, commandMutation, requiredVariables)
 
     // It should accept ALL PARAMETERS
     createAcceptAllParametersTest(commandMutation, allVariables, acceptedParameterNames, graphQLclient)
 
     // It should fail if MISSING REQUIRED input(s)
-    if (acceptedParameters.filter((param) => param.required).length > 0)
-      createMissingRequiredInputTest(commandMutation, graphQLclient)
+    // if (acceptedParameters.filter((param) => param.required).length > 0)
+    //   createMissingRequiredInputTest(commandMutation, graphQLclient)
 
-    // It should succeed with ONLY REQUIRED input(s)
-    if (acceptedParameters.filter((param) => param.required).length > 0)
-      createSubmitOnlyRequiredInputsTest(commandMutation, requiredVariables, graphQLclient)
+    // // It should succeed with ONLY REQUIRED input(s)
+    // if (acceptedParameters.filter((param) => param.required).length > 0)
+    //   createSubmitOnlyRequiredInputsTest(commandMutation, requiredVariables, graphQLclient)
 
-    // It should reject EMPTY inputs
-    createRejectEmptyInputsTest(commandMutation, emptyVariables, graphQLclient)
+    // // It should reject EMPTY inputs
+    // createRejectEmptyInputsTest(commandMutation, emptyVariables, graphQLclient)
 
-    // It should reject INVALID data types
-    createRejectInvalidInputTypesTest(commandMutation, invalidDataTypeVariables, graphQLclient)
+    // // It should reject INVALID data types
+    // createRejectInvalidInputTypesTest(commandMutation, invalidDataTypeVariables, graphQLclient)
 
-    // It should possibly do specific WORK
-    if (workToDeDone.length > 0)
-      createWorkToBeDoneTests(workToDeDone, commandMutation, applicationUnderTest, graphQLclient)
+    // // It should possibly do specific WORK
+    // if (workToDeDone.length > 0)
+    //   createWorkToBeDoneTests(workToDeDone, commandMutation, applicationUnderTest, graphQLclient)
 
-    // It should register specific EVENTS
-    createRegisteredEventsTests(registeredEvents, commandMutation, applicationUnderTest, graphQLclient)
+    // // It should register specific EVENTS
+    // createRegisteredEventsTests(registeredEvents, commandMutation, applicationUnderTest, graphQLclient)
   })
 }
 
@@ -171,6 +173,7 @@ export interface Parameter {
   name: string
   type: string
   required?: boolean
+  validExample?: string | number | boolean
 }
 
 export const getAcceptedParameters = (
@@ -185,7 +188,16 @@ export const getAcceptedParameters = (
     const parameter: Parameter = { name: '', type: '' }
     // remove 'prefix'
     parameterString = parameterString.replace('readonly ', '')
-    // remove 'comment' if present
+    // parse '@validExample' comment value, if present
+    let validExample: string | number | boolean
+    if (parameterString.includes('@validExample')) {
+      validExample = parameterString
+        .match(/@validExample:\s*(.*)/)[1]
+        .replace(/"/g, '')
+        .replace(/'/g, '')
+      parameter.validExample = validExample
+    }
+    // remove comment if present
     parameterString = parameterString.replace(/.\/\/.*/, '')
     // remove comma if present from multi-lines
     parameterString = parameterString.replace(',', '')
@@ -204,24 +216,18 @@ export const getAcceptedParameters = (
   return acceptedParameters
 }
 
-export const getAcceptedParameterNames = (expectedParameters: Parameter[]): string[] =>
-  expectedParameters.map(({ name }) => name)
+export const getAcceptedParameterNames = (acceptedParameters: Parameter[]): string[] =>
+  acceptedParameters.map(({ name }) => name)
 
 // Generate Parameter Variable Options
 // ---------------------------------------------------------------------------------------------------------------------
 
-export const createCommandVariableGroups = (acceptedParameters: Parameter[]): Record<string, string> => {
-  return {
-    allVariables: createAllVariables(acceptedParameters),
-    requiredVariables: createRequiredVariables(acceptedParameters),
-    emptyVariables: createEmptyVariables(acceptedParameters),
-    invalidDataTypeVariables: createInvalidDataTypeVariables(acceptedParameters),
-  }
-}
-
-export const createAllVariables = (expectedParameters: Parameter[]): string => {
-  const variables = expectedParameters
-    .map(({ name, type }) => {
+export const createAllVariables = (acceptedParameters: Parameter[]): string => {
+  console.log('ALL acceptedParameters', acceptedParameters)
+  const variables = acceptedParameters
+    .map(({ name, type, validExample }) => {
+      if (validExample && typeof validExample === 'string') return `"${name}": "${validExample}"`
+      if (validExample && typeof validExample !== 'string') return `"${name}": ${validExample}`
       if (type === 'String') return `"${name}": "${faker.random.word()}"`
       if (type === 'Int') return `"${name}": ${faker.datatype.number()}`
       if (type === 'Boolean') return `"${name}": ${faker.datatype.boolean()}`
@@ -230,13 +236,16 @@ export const createAllVariables = (expectedParameters: Parameter[]): string => {
     .filter(Boolean)
     .join(', ')
     .replace(/^(.*)$/, '{ $1 }')
+  console.log('ALL variables', variables)
   return JSON.parse(variables)
 }
 
-export const createRequiredVariables = (expectedParameters: Parameter[]): string => {
-  const variables = expectedParameters
-    .map(({ name, type, required }) => {
+export const createRequiredVariables = (acceptedParameters: Parameter[]): string => {
+  const variables = acceptedParameters
+    .map(({ name, type, required, validExample }) => {
       if (required) {
+        if (validExample && typeof validExample === 'string') return `"${name}": "${validExample}"`
+        if (validExample && typeof validExample !== 'string') return `"${name}": ${validExample}`
         if (type === 'String') return `"${name}": "${faker.random.word()}"`
         if (type === 'Int') return `"${name}": ${faker.datatype.number()}`
         if (type === 'Boolean') return `"${name}": ${faker.datatype.boolean()}`
@@ -246,11 +255,12 @@ export const createRequiredVariables = (expectedParameters: Parameter[]): string
     .filter(Boolean)
     .join(', ')
     .replace(/^(.*)$/, '{ $1 }')
+  console.log('REQUIRED variables', variables)
   return JSON.parse(variables)
 }
 
-export const createEmptyVariables = (expectedParameters: Parameter[]): string => {
-  const variables = expectedParameters
+export const createEmptyVariables = (acceptedParameters: Parameter[]): string => {
+  const variables = acceptedParameters
     .map(({ name }) => `"${name}": ""`)
     .filter(Boolean)
     .join(', ')
@@ -258,8 +268,8 @@ export const createEmptyVariables = (expectedParameters: Parameter[]): string =>
   return JSON.parse(variables)
 }
 
-export const createInvalidDataTypeVariables = (expectedParameters: Parameter[]): string => {
-  const variables = expectedParameters
+export const createInvalidDataTypeVariables = (acceptedParameters: Parameter[]): string => {
+  const variables = acceptedParameters
     .map(({ name, type }) => {
       if (type === 'String') return `"${name}": ${faker.datatype.number()}`
       if (type === 'Int') return `"${name}": "${faker.random.word()}"`
@@ -389,15 +399,15 @@ export const createRejectInvalidInputTypesTest = (
 // Command Mutation
 // =====================================================================================================================
 
-export const createCommandMutation = (commandName: string, expectedParameters: Parameter[]): DocumentNode => {
-  const inputsVariables = createMutationInputsVariables(expectedParameters)
-  const inputs = createMutationInputs(expectedParameters)
+export const createCommandMutation = (commandName: string, acceptedParameters: Parameter[]): DocumentNode => {
+  const inputsVariables = createMutationInputsVariables(acceptedParameters)
+  const inputs = createMutationInputs(acceptedParameters)
   const content = createMutationContent(commandName, inputsVariables, inputs)
   return gql.gql(content)
 }
 
-export const createMutationInputsVariables = (expectedParameters: Parameter[]): string => {
-  const inputsVariables = expectedParameters
+export const createMutationInputsVariables = (acceptedParameters: Parameter[]): string => {
+  const inputsVariables = acceptedParameters
     .map(({ name, type, required }) => {
       if (required) return `$${name}: ${type}!`
       return `$${name}: ${type}`
@@ -406,8 +416,8 @@ export const createMutationInputsVariables = (expectedParameters: Parameter[]): 
   return inputsVariables
 }
 
-export const createMutationInputs = (expectedParameters: Parameter[]): string => {
-  const inputs: string[] | string = expectedParameters
+export const createMutationInputs = (acceptedParameters: Parameter[]): string => {
+  const inputs: string[] | string = acceptedParameters
     .map(({ name }) => {
       return `${name}: $${name}`
     })

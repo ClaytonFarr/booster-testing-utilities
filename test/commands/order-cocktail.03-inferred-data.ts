@@ -7,34 +7,22 @@ import * as helpers from '../test-helpers'
 const commandName = 'OrderCocktail'
 
 describe(`[Inferred Data + Helper Methods] ${helpers.pascalToTitleCase(commandName)} Command`, async () => {
-  // Define Test Data
+  // Retrieve Test Data
   // -----------------------------------------------------------------------------------------------
-  const authorizedRoles = ['Mom', 'Dad'] // optional auth roles (if 'all' or empty array, auth not tested)
-  const acceptedParameters: helpers.Parameter[] = [
-    { name: 'drink', type: 'String', required: true },
-    { name: 'id', type: 'ID' },
-  ]
-  const registeredEvents: helpers.RegisteredEvent[] = [
-    { input: { drink: 'gimlet' }, event: 'DrinkOrdered', reducingEntity: 'Drink' },
-  ]
-  const workToDeDone: helpers.WorkToBeDone[] = [
-    {
-      workToDo: "capitalize the 'drink' value",
-      testedInputParameter: {
-        name: 'drink',
-        value: 'gimlet',
-      },
-      reducingEntity: 'Drink',
-      expectedResult: 'Gimlet',
-    },
-  ]
+  const commandFileContents = helpers.getCommandFileContents(commandName)
+  const authorizedRoles: helpers.Role[] | string[] = helpers.getRoles(commandName, commandFileContents)
+  const acceptedParameters: helpers.Parameter[] = helpers.getAcceptedParameters(commandName, commandFileContents)
+  const workToDeDone: helpers.WorkToBeDone[] = helpers.getWorkToBeDone(commandName, commandFileContents)
+  const registeredEvents: helpers.RegisteredEvent[] = helpers.getRegisteredEvents(commandName, commandFileContents)
 
   // Create Test Resources
   // -----------------------------------------------------------------------------------------------
   const graphQLclient = authorizedRoles[0] === 'all' ? unAuthGraphQLclient : authGraphQLclient(authorizedRoles[0])
   const acceptedParameterNames = helpers.getAcceptedParameterNames(acceptedParameters)
-  const { allVariables, requiredVariables, emptyVariables, invalidDataTypeVariables } =
-    helpers.createCommandVariableGroups(acceptedParameters)
+  const allVariables = helpers.createAllVariables(acceptedParameters)
+  const requiredVariables = helpers.createRequiredVariables(acceptedParameters)
+  const emptyVariables = helpers.createEmptyVariables(acceptedParameters)
+  const invalidDataTypeVariables = helpers.createInvalidDataTypeVariables(acceptedParameters)
   const commandMutation = helpers.createCommandMutation(commandName, acceptedParameters)
 
   // TESTS

@@ -1,19 +1,49 @@
 import { describe } from 'vitest'
-import { applicationUnderTest, unAuthGraphQLclient, authGraphQLclient } from '../helpers'
-import * as helpers from '../helpers'
+import { applicationUnderTest, unAuthGraphQLclient, authGraphQLclient } from '../test-helpers'
+import * as helpers from '../test-helpers'
 
 // Test
 // =================================================================================================
-const commandName = 'OrderCocktail'
+const commandName = 'OrderSnack'
 
-describe(`[Auto Retrieved Data] ${helpers.pascalToTitleCase(commandName)} Command`, async () => {
-  // Retrieve Test Data
+describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandName)} Command`, async () => {
+  // Define Test Data
   // -----------------------------------------------------------------------------------------------
-  const commandFileContents = helpers.getCommandFileContents(commandName)
-  const authorizedRoles: helpers.Role[] | string[] = helpers.getRoles(commandName, commandFileContents)
-  const acceptedParameters: helpers.Parameter[] = helpers.getAcceptedParameters(commandName, commandFileContents)
-  const registeredEvents: helpers.RegisteredEvent[] = helpers.getRegisteredEvents(commandName, commandFileContents)
-  const additionalWorkDone: helpers.WorkToBeDone[] = helpers.getWorkToBeDone(commandName, commandFileContents)
+  const authorizedRoles = ['all'] // optional auth roles (if 'all' or empty array, auth not tested)
+  const acceptedParameters: helpers.Parameter[] = [
+    { name: 'fruit', type: 'String', required: true },
+    { name: 'drink', type: 'String' },
+    { name: 'id', type: 'ID' },
+  ]
+  const registeredEvents: helpers.RegisteredEvent[] = [
+    // event, the command input required to register it, and one of events reducing entities (to evaluate result)
+    { input: { fruit: 'apple' }, event: 'FruitOrdered', reducingEntity: 'Fruit' },
+    { input: { fruit: 'pear', drink: 'water' }, event: 'DrinkOrdered', reducingEntity: 'Drink' },
+    { input: { fruit: 'candy' }, event: 'CandyOrdered', reducingEntity: 'Tattle' },
+  ]
+  const workToBeDone: helpers.WorkToBeDone[] = [
+    {
+      workToDo: "capitalize the 'fruit' value",
+      // command input that should trigger the work (currently only one input is supported by test method below)
+      testedInputParameter: {
+        name: 'fruit',
+        value: 'apple',
+      },
+      // entity to evaluate work done
+      reducingEntity: 'Fruit',
+      // expected result if work done (currently presumes entity field name matches input parameter name)
+      expectedResult: 'Apple',
+    },
+    {
+      workToDo: 'tattle when candy is ordered',
+      testedInputParameter: {
+        name: 'fruit',
+        value: 'candy',
+      },
+      reducingEntity: 'Tattle',
+      expectedResult: true,
+    },
+  ]
 
   // Create Test Resources
   // -----------------------------------------------------------------------------------------------
@@ -47,8 +77,8 @@ describe(`[Auto Retrieved Data] ${helpers.pascalToTitleCase(commandName)} Comman
   helpers.createRejectInvalidInputTypesTest(commandMutation, invalidDataTypeVariables, graphQLclient)
 
   // It should possibly do specific WORK
-  if (additionalWorkDone.length > 0)
-    helpers.createWorkToBeDoneTests(additionalWorkDone, commandMutation, applicationUnderTest, graphQLclient)
+  if (workToBeDone.length > 0)
+    helpers.createWorkToBeDoneTests(workToBeDone, commandMutation, applicationUnderTest, graphQLclient)
 
   // It should register specific EVENTS
   helpers.createRegisteredEventsTests(registeredEvents, commandMutation, applicationUnderTest, graphQLclient)

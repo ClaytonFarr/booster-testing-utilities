@@ -11,18 +11,15 @@
 - [x] abstract test patterns into reusable functions
 - [x] create 2nd integration test
 - [x] note expectations for each element
+- [x] check tests in AWS environment
 
 - [ ] note expectations / effects for a process
-- [ ] check tests in AWS environment
-- [ ] create test example for each type of element
-- [ ] sort out how to make tests show up in coverage report
 - [ ] draft public readme
+- [ ] create test example for each type of element
+- [ ] review unit test examples: https://github.com/boostercloud/booster/tree/main/packages/framework-core/test
+- [ ] sort out how to make tests show up in coverage report
 
-_References_
-
-- https://github.com/boostercloud/booster/tree/main/packages/framework-integration-tests/integration/provider-unaware/functionality
-- https://github.com/boostercloud/booster/tree/6448db061ba7d11bd91bbd6525e4b646fb8205a9/packages/framework-provider-local/test
-- https://github.com/boostercloud/booster/tree/main/packages/framework-core/test
+_Notes_
 
 - leaning on Booster framework tests for core functionality coverage (e.g. commands processing successfully, events reducing into entities, entities projecting into read models, etc.)
 
@@ -53,6 +50,7 @@ _References_
 - ⏩ should fail if parameters are invalid type
 - ⏩ should perform certain work
 - ⏩ should register specific event(s)
+- ref: https://github.com/boostercloud/booster/blob/main/packages/framework-integration-tests/integration/provider-unaware/functionality/scheduled-commands.integration.ts
 
 **An Event Handler**
 
@@ -75,6 +73,7 @@ _References_
 - should have specific parameters(s)
 - should reduce specific event(s)
 - ? may update specific read model(s)
+- ref: https://github.com/boostercloud/booster/blob/6448db061ba7d11bd91bbd6525e4b646fb8205a9/packages/framework-provider-local/test/helpers/event-helper.ts
 
 **A Read Model**
 
@@ -83,6 +82,7 @@ _References_
 - should project specific entity(ies)
 - should project entity's public data
 - should NOT project entity's private data
+- ref: https://github.com/boostercloud/booster/blob/6448db061ba7d11bd91bbd6525e4b646fb8205a9/packages/framework-provider-local/test/helpers/read-model-helper.ts
 
 ## Testing Notes
 

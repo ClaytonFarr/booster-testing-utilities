@@ -33,6 +33,8 @@ Booster.configure('local', (config: BoosterConfig): void => {
 Booster.configure('test', (config: BoosterConfig): void => {
   config.appName = `${appName}-test`
   config.providerPackage = '@boostercloud/framework-provider-aws'
+  // 'keys' directory needs to be included in deployed environments for testing to work properly
+  config.assets = ['keys']
   config.tokenVerifiers = [
     {
       issuer: 'booster',
@@ -53,9 +55,11 @@ Booster.configure('test', (config: BoosterConfig): void => {
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = `${appName}-dev`
   config.providerPackage = '@boostercloud/framework-provider-aws'
+  config.assets = ['keys']
 })
 
 Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = `${appName}-prod`
   config.providerPackage = '@boostercloud/framework-provider-aws'
+  config.assets = ['keys']
 })

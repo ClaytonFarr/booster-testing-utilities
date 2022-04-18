@@ -9,7 +9,7 @@ import { Mom, Dad } from '../roles'
 export class OrderCocktail {
   public constructor(
     readonly drink: string,
-    readonly id?: UUID // optional ID param for testing
+    readonly id?: UUID // an optional ID param is included for tests
   ) {}
 
   public static async handle(command: OrderCocktail, register: Register): Promise<void> {

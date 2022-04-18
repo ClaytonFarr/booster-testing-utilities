@@ -23,7 +23,7 @@ describe('validation', () => {
   })
 })
 
-describe.skip('delay', () => {
+describe('delay', () => {
   it('waits requested number of seconds', () => {
     const start = Date.now()
     const seconds = 1

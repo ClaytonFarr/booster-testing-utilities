@@ -1,4 +1,4 @@
-import { backupLocalDatastores, restoreLocalDatastores } from './helpers/custom-local-test-helper'
+import { backupLocalDatastores, restoreLocalDatastores } from './test-helpers/custom-local-test-helper'
 
 export async function setup(): Promise<void> {
   // local tests setup

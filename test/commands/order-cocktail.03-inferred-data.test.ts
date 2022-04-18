@@ -1,19 +1,19 @@
 import { describe } from 'vitest'
-import { applicationUnderTest, unAuthGraphQLclient, authGraphQLclient } from '../helpers'
-import * as helpers from '../helpers'
+import { applicationUnderTest, unAuthGraphQLclient, authGraphQLclient } from '../test-helpers'
+import * as helpers from '../test-helpers'
 
 // Test
 // =================================================================================================
-const commandName = 'OrderSnack'
+const commandName = 'OrderCocktail'
 
-describe(`[Auto Retrieved Data] ${helpers.pascalToTitleCase(commandName)} Command`, async () => {
+describe(`[Inferred Data + Helper Methods] ${helpers.pascalToTitleCase(commandName)} Command`, async () => {
   // Retrieve Test Data
   // -----------------------------------------------------------------------------------------------
   const commandFileContents = helpers.getCommandFileContents(commandName)
-  const authorizedRoles: string[] = helpers.getRoles(commandName, commandFileContents)
+  const authorizedRoles: helpers.Role[] | string[] = helpers.getRoles(commandName, commandFileContents)
   const acceptedParameters: helpers.Parameter[] = helpers.getAcceptedParameters(commandName, commandFileContents)
+  const workToDeDone: helpers.WorkToBeDone[] = helpers.getWorkToBeDone(commandName, commandFileContents)
   const registeredEvents: helpers.RegisteredEvent[] = helpers.getRegisteredEvents(commandName, commandFileContents)
-  const additionalWorkDone: helpers.WorkToBeDone[] = helpers.getWorkToBeDone(commandName, commandFileContents)
 
   // Create Test Resources
   // -----------------------------------------------------------------------------------------------
@@ -47,8 +47,8 @@ describe(`[Auto Retrieved Data] ${helpers.pascalToTitleCase(commandName)} Comman
   helpers.createRejectInvalidInputTypesTest(commandMutation, invalidDataTypeVariables, graphQLclient)
 
   // It should possibly do specific WORK
-  if (additionalWorkDone.length > 0)
-    helpers.createWorkToBeDoneTests(additionalWorkDone, commandMutation, applicationUnderTest, graphQLclient)
+  if (workToDeDone.length > 0)
+    helpers.createWorkToBeDoneTests(workToDeDone, commandMutation, applicationUnderTest, graphQLclient)
 
   // It should register specific EVENTS
   helpers.createRegisteredEventsTests(registeredEvents, commandMutation, applicationUnderTest, graphQLclient)

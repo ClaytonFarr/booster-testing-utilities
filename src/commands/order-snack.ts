@@ -9,9 +9,9 @@ import { CandyOrdered } from '../events/candy-ordered'
 })
 export class OrderSnack {
   public constructor(
-    readonly fruit: string, //
+    readonly fruit: string,
     readonly drink?: string,
-    readonly id?: UUID // optional ID param for testing
+    readonly id?: UUID // an optional ID param is included for tests
   ) {}
 
   public static async handle(command: OrderSnack, register: Register): Promise<void> {

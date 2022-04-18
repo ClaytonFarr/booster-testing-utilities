@@ -4,13 +4,13 @@ import type { ApolloClient } from 'apollo-client'
 import type { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import type { DocumentNode } from 'graphql'
 import { describe, it, expect } from 'vitest'
-import { applicationUnderTest, unAuthGraphQLclient, authGraphQLclient } from '../helpers'
+import { applicationUnderTest, unAuthGraphQLclient, authGraphQLclient } from '../test-helpers'
 import { faker } from '@faker-js/faker'
-import * as helpers from '../helpers'
+import * as helpers from '../test-helpers'
 
 // Test
 // =================================================================================================
-describe('[Manual Data + Tests] Order Cocktail Command', async () => {
+describe('[Explicit Data + Helper Methods] Order Cocktail Command', async () => {
   //
   // TEST SETUP
   // -----------------------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ describe('[Manual Data + Tests] Order Cocktail Command', async () => {
   const registeredEvents: helpers.RegisteredEvent[] = [
     { input: { drink: 'gimlet' }, event: 'DrinkOrdered', reducingEntity: 'Drink' },
   ]
-  const additionalWorkDone: helpers.WorkToBeDone[] = [
+  const workToDeDone: helpers.WorkToBeDone[] = [
     {
       workToDo: "capitalize the 'drink' value",
       testedInputParameter: {
@@ -196,8 +196,8 @@ describe('[Manual Data + Tests] Order Cocktail Command', async () => {
 
   // It should do specific WORK
   // -----------------------------------------------------------------------------------------------
-  if (additionalWorkDone.length > 0) {
-    additionalWorkDone.forEach(async (work) => {
+  if (workToDeDone.length > 0) {
+    workToDeDone.forEach(async (work) => {
       it(
         `should do the work to: ${work.workToDo}`,
         async () => {

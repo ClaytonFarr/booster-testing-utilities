@@ -3,7 +3,7 @@ import type { EventEnvelope } from '@boostercloud/framework-types'
 import type { ApolloClient } from 'apollo-client'
 import type { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import type { DocumentNode } from 'graphql'
-import { applicationUnderTest, unAuthGraphQLclient, authGraphQLclient } from '../helpers'
+import { applicationUnderTest, unAuthGraphQLclient, authGraphQLclient } from '../test-helpers'
 import { describe, it, expect } from 'vitest'
 import { faker } from '@faker-js/faker'
 import { waitForIt } from '.'
@@ -23,8 +23,8 @@ export const generateCommandTests = (commandName: string): void => {
     const commandFileContents = getCommandFileContents(commandName)
     const authorizedRoles: Role[] | string[] = getRoles(commandName, commandFileContents)
     const acceptedParameters: Parameter[] = getAcceptedParameters(commandName, commandFileContents)
+    const workToDeDone: WorkToBeDone[] = getWorkToBeDone(commandName, commandFileContents)
     const registeredEvents: RegisteredEvent[] = getRegisteredEvents(commandName, commandFileContents)
-    const additionalWorkDone: WorkToBeDone[] = getWorkToBeDone(commandName, commandFileContents)
 
     // Create Test Resources
     // -----------------------------------------------------------------------------------------------
@@ -58,8 +58,8 @@ export const generateCommandTests = (commandName: string): void => {
     createRejectInvalidInputTypesTest(commandMutation, invalidDataTypeVariables, graphQLclient)
 
     // It should possibly do specific WORK
-    if (additionalWorkDone.length > 0)
-      createWorkToBeDoneTests(additionalWorkDone, commandMutation, applicationUnderTest, graphQLclient)
+    if (workToDeDone.length > 0)
+      createWorkToBeDoneTests(workToDeDone, commandMutation, applicationUnderTest, graphQLclient)
 
     // It should register specific EVENTS
     createRegisteredEventsTests(registeredEvents, commandMutation, applicationUnderTest, graphQLclient)

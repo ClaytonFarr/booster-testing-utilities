@@ -4,13 +4,13 @@ import type { ApolloClient } from 'apollo-client'
 import type { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import type { DocumentNode } from 'graphql'
 import { describe, it, expect } from 'vitest'
-import { applicationUnderTest, unAuthGraphQLclient, authGraphQLclient } from '../helpers'
+import { applicationUnderTest, unAuthGraphQLclient, authGraphQLclient } from '../test-helpers'
 import { faker } from '@faker-js/faker'
-import * as helpers from '../helpers'
+import * as helpers from '../test-helpers'
 
 // Test
 // =================================================================================================
-describe('[Manual Data + Tests] Order Snack Command', async () => {
+describe('[Explicit Data + Tests] Order Snack Command', async () => {
   //
   // TEST SETUP
   // -----------------------------------------------------------------------------------------------
@@ -25,18 +25,22 @@ describe('[Manual Data + Tests] Order Snack Command', async () => {
     { name: 'id', type: 'ID' },
   ]
   const registeredEvents: helpers.RegisteredEvent[] = [
+    // event, the command input required to register it, and one of events reducing entities (to evaluate result)
     { input: { fruit: 'apple' }, event: 'FruitOrdered', reducingEntity: 'Fruit' },
     { input: { fruit: 'pear', drink: 'water' }, event: 'DrinkOrdered', reducingEntity: 'Drink' },
     { input: { fruit: 'candy' }, event: 'CandyOrdered', reducingEntity: 'Tattle' },
   ]
-  const additionalWorkDone: helpers.WorkToBeDone[] = [
+  const workToBeDone: helpers.WorkToBeDone[] = [
     {
       workToDo: "capitalize the 'fruit' value",
+      // command input that should trigger the work (currently only one input is supported by test method below)
       testedInputParameter: {
         name: 'fruit',
         value: 'apple',
       },
+      // entity to evaluate work done
       reducingEntity: 'Fruit',
+      // expected result if work done (currently presumes entity field name matches input parameter name)
       expectedResult: 'Apple',
     },
     {
@@ -208,8 +212,8 @@ describe('[Manual Data + Tests] Order Snack Command', async () => {
 
   // It should do specific WORK
   // -----------------------------------------------------------------------------------------------
-  if (additionalWorkDone.length > 0) {
-    additionalWorkDone.forEach(async (work) => {
+  if (workToBeDone.length > 0) {
+    workToBeDone.forEach(async (work) => {
       it(
         `should do the work to: ${work.workToDo}`,
         async () => {

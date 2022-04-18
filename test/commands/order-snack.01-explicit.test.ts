@@ -21,7 +21,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
   const authorizedRoles = ['all'] // optional auth roles (if 'all' or empty array, auth not tested)
   const acceptedParameters: helpers.Parameter[] = [
     { name: 'fruit', type: 'String', required: true },
-    { name: 'drink', type: 'String' },
+    { name: 'drink', type: 'String', validExample: 'water' },
     { name: 'id', type: 'ID' },
   ]
   const registeredEvents: helpers.RegisteredEvent[] = [

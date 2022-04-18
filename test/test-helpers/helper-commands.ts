@@ -40,31 +40,31 @@ export const generateCommandTests = (commandName: string): void => {
     // -----------------------------------------------------------------------------------------------
 
     // It should perform correct AUTHORIZATION
-    // if (authorizedRoles[0] !== 'all') createRolesTests(authorizedRoles, commandMutation, requiredVariables)
+    if (authorizedRoles[0] !== 'all') createRolesTests(authorizedRoles, commandMutation, requiredVariables)
 
     // It should accept ALL PARAMETERS
     createAcceptAllParametersTest(commandMutation, allVariables, acceptedParameterNames, graphQLclient)
 
     // It should fail if MISSING REQUIRED input(s)
-    // if (acceptedParameters.filter((param) => param.required).length > 0)
-    //   createMissingRequiredInputTest(commandMutation, graphQLclient)
+    if (acceptedParameters.filter((param) => param.required).length > 0)
+      createMissingRequiredInputTest(commandMutation, graphQLclient)
 
-    // // It should succeed with ONLY REQUIRED input(s)
-    // if (acceptedParameters.filter((param) => param.required).length > 0)
-    //   createSubmitOnlyRequiredInputsTest(commandMutation, requiredVariables, graphQLclient)
+    // It should succeed with ONLY REQUIRED input(s)
+    if (acceptedParameters.filter((param) => param.required).length > 0)
+      createSubmitOnlyRequiredInputsTest(commandMutation, requiredVariables, graphQLclient)
 
-    // // It should reject EMPTY inputs
-    // createRejectEmptyInputsTest(commandMutation, emptyVariables, graphQLclient)
+    // It should reject EMPTY inputs
+    createRejectEmptyInputsTest(commandMutation, emptyVariables, graphQLclient)
 
-    // // It should reject INVALID data types
-    // createRejectInvalidInputTypesTest(commandMutation, invalidDataTypeVariables, graphQLclient)
+    // It should reject INVALID data types
+    createRejectInvalidInputTypesTest(commandMutation, invalidDataTypeVariables, graphQLclient)
 
-    // // It should possibly do specific WORK
-    // if (workToDeDone.length > 0)
-    //   createWorkToBeDoneTests(workToDeDone, commandMutation, applicationUnderTest, graphQLclient)
+    // It should possibly do specific WORK
+    if (workToDeDone.length > 0)
+      createWorkToBeDoneTests(workToDeDone, commandMutation, applicationUnderTest, graphQLclient)
 
-    // // It should register specific EVENTS
-    // createRegisteredEventsTests(registeredEvents, commandMutation, applicationUnderTest, graphQLclient)
+    // It should register specific EVENTS
+    createRegisteredEventsTests(registeredEvents, commandMutation, applicationUnderTest, graphQLclient)
   })
 }
 
@@ -223,7 +223,6 @@ export const getAcceptedParameterNames = (acceptedParameters: Parameter[]): stri
 // ---------------------------------------------------------------------------------------------------------------------
 
 export const createAllVariables = (acceptedParameters: Parameter[]): string => {
-  console.log('ALL acceptedParameters', acceptedParameters)
   const variables = acceptedParameters
     .map(({ name, type, validExample }) => {
       if (validExample && typeof validExample === 'string') return `"${name}": "${validExample}"`
@@ -236,7 +235,6 @@ export const createAllVariables = (acceptedParameters: Parameter[]): string => {
     .filter(Boolean)
     .join(', ')
     .replace(/^(.*)$/, '{ $1 }')
-  console.log('ALL variables', variables)
   return JSON.parse(variables)
 }
 
@@ -255,7 +253,6 @@ export const createRequiredVariables = (acceptedParameters: Parameter[]): string
     .filter(Boolean)
     .join(', ')
     .replace(/^(.*)$/, '{ $1 }')
-  console.log('REQUIRED variables', variables)
   return JSON.parse(variables)
 }
 

@@ -40,7 +40,7 @@ export class OrderSnack {
     if (command.drink) {
       register.events(
         new DrinkOrdered(
-          // @requiredInput: { fruit: string, drink: string }
+          // @requiredInput: { fruit: string, drink: 'water' }
           // @aReducingEntity: 'Drink'
           orderId,
           capitalize(command.drink),

@@ -6,7 +6,7 @@ import * as helpers from '../test-helpers'
 // =================================================================================================
 const commandName = 'OrderCocktail'
 
-describe(`[Inferred Data + Helper Methods] ${helpers.pascalToTitleCase(commandName)} Command`, async () => {
+describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandName)} Command`, async () => {
   // Define Test Data
   // -----------------------------------------------------------------------------------------------
   const authorizedRoles = ['Mom', 'Dad'] // optional auth roles (if 'all' or empty array, auth not tested)

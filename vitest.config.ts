@@ -11,6 +11,8 @@ export default defineConfig({
     },
     globalSetup: ['test/globalSetup.ts'], // will run before/after *all* tests
     // setupFiles: ['test/setup.ts'], // will run before *each* test file
-    // threads: false, // disabling parallel tests to avoid this issue for now: https://github.com/vitest-dev/vitest/issues/317#issuecomment-1058106323
+    threads: false,
+    // disable parallel tests may help avoid this issue for now: https://github.com/vitest-dev/vitest/issues/317#issuecomment-1058106323
+    // disabling threads may also speed up tests at the moment: https://github.com/vitest-dev/vitest/issues/579
   },
 })

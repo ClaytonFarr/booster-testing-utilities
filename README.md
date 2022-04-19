@@ -27,23 +27,28 @@ _Notes_
 
 **A Process**
 
-- should ...
+- should perform correct authorization OR correct schedule
+- should accept specific parameter(s)
+- should perform certain work
+- should save specific data to entity(ies)
+- may make specific data visible for entity(ies)
 
 **A Command**
 
 - ✅ should perform correct authorization
-- ✅ should accept specific parameters(s)
+- ✅ should accept specific parameter(s)
 - ✅ should fail when required parameters are missing
 - ✅ should succeed if submitting only required parameter(s)
 - ✅ should fail if parameters values are empty ('')
 - ✅ should fail if parameters are invalid type
 - ✅ should perform certain work
 - ✅ should register specific event(s)
+- ? should be able to receive same command repeatedly or specific number of times
 
 **A Scheduled Command**
 
 - should be called at specific time(s)
-- ⏩ should accept specific parameters(s)
+- ⏩ should accept specific parameter(s)
 - ⏩ should fail when required parameters are missing
 - ⏩ should succeed if submitting only required parameter(s)
 - ⏩ should fail if parameters values are empty ('')
@@ -55,22 +60,24 @@ _Notes_
 **An Event Handler**
 
 - should be called when a specific event is emitted
-- ⏩ should accept specific parameters(s)
+- ⏩ should accept specific parameter(s)
 - ⏩ should fail when required parameters are missing
 - ⏩ should succeed if submitting only required parameter(s)
 - ⏩ should fail if parameters values are empty ('')
 - ⏩ should fail if parameters are invalid type
 - ⏩ should perform certain work
 - ⏩ should register specific event(s)
+- should be able to receive same event without duplicating work
+- should be able to process events out of order
 
 **An Event**
 
-- should have specific parameters(s)
+- should have specific parameter(s)
 - ? should update specific entity(ies)
 
 **An Entity**
 
-- should have specific parameters(s)
+- should have specific parameter(s)
 - should reduce specific event(s)
 - ? may update specific read model(s)
 - ref: https://github.com/boostercloud/booster/blob/6448db061ba7d11bd91bbd6525e4b646fb8205a9/packages/framework-provider-local/test/helpers/event-helper.ts
@@ -78,7 +85,7 @@ _Notes_
 **A Read Model**
 
 - ⏩ should perform correct authorization
-- ⏩ should accept specific parameters(s)
+- ⏩ should accept specific parameter(s)
 - should project specific entity(ies)
 - should project entity's public data
 - should NOT project entity's private data

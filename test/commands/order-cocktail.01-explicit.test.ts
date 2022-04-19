@@ -24,16 +24,16 @@ describe('[Explicit Data + Helper Methods] Order Cocktail Command', async () => 
     { name: 'id', type: 'ID' },
   ]
   const registeredEvents: helpers.RegisteredEvent[] = [
-    { input: { drink: 'gimlet' }, event: 'DrinkOrdered', reducingEntity: 'Drink' },
+    { input: { drink: 'gimlet' }, event: 'DrinkOrdered', evaluatedEntity: 'Drink' },
   ]
   const workToDeDone: helpers.WorkToBeDone[] = [
     {
       workToDo: "capitalize the 'drink' value",
-      testedInputParameter: {
+      testInputParameter: {
         name: 'drink',
         value: 'gimlet',
       },
-      reducingEntity: 'Drink',
+      evaluatedEntity: 'Drink',
       expectedResult: 'Gimlet',
     },
   ]
@@ -220,10 +220,10 @@ describe('[Explicit Data + Helper Methods] Order Cocktail Command', async () => 
   ): Promise<boolean> => {
     // reference values
     const id = faker.datatype.uuid()
-    const primaryKey = `${work.reducingEntity}-${id}-snapshot`
+    const primaryKey = `${work.evaluatedEntity}-${id}-snapshot`
 
     // submit command
-    const commandVariables = { [work.testedInputParameter.name]: work.testedInputParameter.value, id }
+    const commandVariables = { [work.testInputParameter.name]: work.testInputParameter.value, id }
     await graphQLclient.mutate({ variables: commandVariables, mutation: commandMutation })
 
     // wait until action is processed
@@ -248,7 +248,7 @@ describe('[Explicit Data + Helper Methods] Order Cocktail Command', async () => 
     // ...if expected result should be a value
     if (typeof work.expectedResult === 'string' || typeof work.expectedResult === 'number') {
       const filteredResults = lookupResults.filter(
-        (record) => record.value[work.testedInputParameter.name as string] === work.expectedResult
+        (record) => record.value[work.testInputParameter.name as string] === work.expectedResult
       )
       evaluationResult = filteredResults.length > 0
     }
@@ -277,7 +277,7 @@ describe('[Explicit Data + Helper Methods] Order Cocktail Command', async () => 
   ): Promise<boolean> => {
     // event store query expects primary key that matches `entityTypeName_entityID_kind` value
     const id = faker.datatype.uuid()
-    const primaryKey = `${registeredEvent.reducingEntity}-${id}-event`
+    const primaryKey = `${registeredEvent.evaluatedEntity}-${id}-event`
 
     // command variables
     const commandVariables = { ...registeredEvent.input, id }

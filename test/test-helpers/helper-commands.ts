@@ -114,7 +114,7 @@ export const createRolesTests = (
   // check authorized request(s)
   authorizedRoles.forEach(async (role) => {
     it(`should allow '${role}' role to make request`, async () => {
-      const check = await wasUnauthorizedRequestAllowed(role, commandMutation, requiredVariables)
+      const check = await wasAuthorizedRequestAllowed(role, commandMutation, requiredVariables)
       expect(check).toBe(true)
       // console.log(`✅ [Command Accepts Authorized Request for '${role.name}']`)
     })
@@ -144,7 +144,7 @@ export const wasUnauthorizedRequestRejected = async (
   return !!commandRejection
 }
 
-export const wasUnauthorizedRequestAllowed = async (
+export const wasAuthorizedRequestAllowed = async (
   role: string,
   commandMutation: DocumentNode,
   requiredVariables: string
@@ -435,11 +435,12 @@ export const createMutationContent = (commandName: string, inputsVariables: stri
 
 export interface WorkToBeDone {
   workToDo: string
-  testedInputParameter: {
+  testInputParameter?: {
     name: string
     value: string
   }
-  reducingEntity: string
+  evaluatedEntity: string
+  evaluatedField?: string
   expectedResult: boolean | string | number
 }
 
@@ -469,11 +470,12 @@ export const getWorkToBeDone = (
     // create empty object for work item
     const thisWorkToBeDone: WorkToBeDone = {
       workToDo: '',
-      testedInputParameter: {
+      testInputParameter: {
         name: '',
         value: '',
       },
-      reducingEntity: '',
+      evaluatedEntity: '',
+      evaluatedField: '',
       expectedResult: '',
     }
 
@@ -488,22 +490,22 @@ export const getWorkToBeDone = (
     thisWorkToBeDone.workToDo = workToDo
 
     // parse work input parameter (if not present, exit)
-    let testedInputParameter = workItem
+    let testInputParameter = workItem
       .filter(([statement, index]) => statement.includes(`@work${index}-inputs: `))[0][0]
       .replace(`@work${workItemIndexRef}-inputs: `, '')
     // ...convert JSON string to object
-    testedInputParameter = Function('"use strict";return (' + testedInputParameter + ')')()
-    if (!testedInputParameter) return
-    thisWorkToBeDone.testedInputParameter = testedInputParameter
+    testInputParameter = Function('"use strict";return (' + testInputParameter + ')')()
+    if (!testInputParameter) return
+    thisWorkToBeDone.testInputParameter = testInputParameter
 
     // parse reducing entity (if not present, exit)
-    const reducingEntity = workItem
+    const evaluatedEntity = workItem
       .filter(([statement, index]) => statement.includes(`@work${index}-entity: `))[0][0]
       .replace(`@work${workItemIndexRef}-entity: `, '')
       .replace(/'/g, '')
       .replace(/"/g, '')
-    if (!reducingEntity) return
-    thisWorkToBeDone.reducingEntity = reducingEntity
+    if (!evaluatedEntity) return
+    thisWorkToBeDone.evaluatedEntity = evaluatedEntity
 
     // parse expected result (if not present, exit)
     let expectedResult = workItem
@@ -552,10 +554,10 @@ export const wasWorkDone = async (
 ): Promise<boolean> => {
   // reference values
   const id = faker.datatype.uuid()
-  const primaryKey = `${work.reducingEntity}-${id}-snapshot`
+  const primaryKey = `${work.evaluatedEntity}-${id}-snapshot`
 
   // submit command
-  const commandVariables = { [work.testedInputParameter.name]: work.testedInputParameter.value, id }
+  const commandVariables = { [work.testInputParameter.name]: work.testInputParameter.value, id }
   await graphQLclient.mutate({ variables: commandVariables, mutation: commandMutation })
 
   // wait until action is processed
@@ -579,9 +581,20 @@ export const wasWorkDone = async (
   if (work.expectedResult === false) evaluationResult = lookupResults.length === 0
   // ...if expected result should be a value
   if (typeof work.expectedResult === 'string' || typeof work.expectedResult === 'number') {
-    const filteredResults = lookupResults.filter(
-      (record) => record.value[work.testedInputParameter.name as string] === work.expectedResult
-    )
+    let filteredResults: unknown[]
+    // ...if 'evaluatedField' field is present, use it
+    if (work.evaluatedField)
+      filteredResults = lookupResults.filter(
+        (record) => record.value[work.evaluatedField as string] === work.expectedResult
+      )
+    // ...if not, fallback to 'testInputParameter' name field
+    if (!work.evaluatedField && work.testInputParameter.name)
+      filteredResults = lookupResults.filter(
+        (record) => record.value[work.testInputParameter.name as string] === work.expectedResult
+      )
+    // ...if neither field is present, throw error
+    if (!work.evaluatedField && !work.testInputParameter.name)
+      throw new Error(`No field to evaluate for '${work.workToDo}'`)
     evaluationResult = filteredResults.length > 0
   }
   return evaluationResult
@@ -593,7 +606,7 @@ export const wasWorkDone = async (
 export interface RegisteredEvent {
   input: Record<string, unknown>
   event: string
-  reducingEntity: string
+  evaluatedEntity: string
 }
 
 export const getRegisteredEvents = (
@@ -609,7 +622,7 @@ export const getRegisteredEvents = (
       .matchAll(/register\.events\(\n*\s*new\s*(\w*)\(\n*.*\/\/\s*(@requiredInput.*)\n*.*\/\/\s*(@aReducingEntity.*)/g),
   ]
   eventStatements.forEach((eventString) => {
-    const thisEvent: RegisteredEvent = { input: {}, event: '', reducingEntity: '' }
+    const thisEvent: RegisteredEvent = { input: {}, event: '', evaluatedEntity: '' }
 
     // create query variable string for event
     let inputs = {}
@@ -631,7 +644,7 @@ export const getRegisteredEvents = (
     })
     thisEvent.input = inputs
     thisEvent.event = eventString[1]
-    thisEvent.reducingEntity = eventString[3].replace(/@aReducingEntity:\s*/, '').replace(/'/g, '')
+    thisEvent.evaluatedEntity = eventString[3].replace(/@aReducingEntity:\s*/, '').replace(/'/g, '')
     registeredEvents.push(thisEvent)
   })
   return registeredEvents
@@ -666,7 +679,7 @@ export const wasEventRegistered = async (
 ): Promise<boolean> => {
   // event store query expects primary key that matches `entityTypeName_entityID_kind` value
   const id = faker.datatype.uuid()
-  const primaryKey = `${registeredEvent.reducingEntity}-${id}-event`
+  const primaryKey = `${registeredEvent.evaluatedEntity}-${id}-event`
 
   // command variables
   const commandVariables = { ...registeredEvent.input, id }

@@ -15,16 +15,16 @@ describe(`[Inferred Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
     { name: 'id', type: 'ID' },
   ]
   const registeredEvents: helpers.RegisteredEvent[] = [
-    { input: { drink: 'gimlet' }, event: 'DrinkOrdered', reducingEntity: 'Drink' },
+    { input: { drink: 'gimlet' }, event: 'DrinkOrdered', evaluatedEntity: 'Drink' },
   ]
   const workToDeDone: helpers.WorkToBeDone[] = [
     {
       workToDo: "capitalize the 'drink' value",
-      testedInputParameter: {
+      testInputParameter: {
         name: 'drink',
         value: 'gimlet',
       },
-      reducingEntity: 'Drink',
+      evaluatedEntity: 'Drink',
       expectedResult: 'Gimlet',
     },
   ]

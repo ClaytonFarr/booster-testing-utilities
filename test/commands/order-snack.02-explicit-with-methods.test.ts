@@ -17,30 +17,30 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
   ]
   const registeredEvents: helpers.RegisteredEvent[] = [
     // event, the command input required to register it, and one of events reducing entities (to evaluate result)
-    { input: { fruit: 'apple' }, event: 'FruitOrdered', reducingEntity: 'Fruit' },
-    { input: { fruit: 'pear', drink: 'water' }, event: 'DrinkOrdered', reducingEntity: 'Drink' },
-    { input: { fruit: 'candy' }, event: 'CandyOrdered', reducingEntity: 'Tattle' },
+    { input: { fruit: 'apple' }, event: 'FruitOrdered', evaluatedEntity: 'Fruit' },
+    { input: { fruit: 'pear', drink: 'water' }, event: 'DrinkOrdered', evaluatedEntity: 'Drink' },
+    { input: { fruit: 'candy' }, event: 'CandyOrdered', evaluatedEntity: 'Tattle' },
   ]
   const workToBeDone: helpers.WorkToBeDone[] = [
     {
       workToDo: "capitalize the 'fruit' value",
       // command input that should trigger the work (currently only one input is supported by test method below)
-      testedInputParameter: {
+      testInputParameter: {
         name: 'fruit',
         value: 'apple',
       },
       // entity to evaluate work done
-      reducingEntity: 'Fruit',
+      evaluatedEntity: 'Fruit',
       // expected result if work done (currently presumes entity field name matches input parameter name)
       expectedResult: 'Apple',
     },
     {
       workToDo: 'tattle when candy is ordered',
-      testedInputParameter: {
+      testInputParameter: {
         name: 'fruit',
         value: 'candy',
       },
-      reducingEntity: 'Tattle',
+      evaluatedEntity: 'Tattle',
       expectedResult: true,
     },
   ]

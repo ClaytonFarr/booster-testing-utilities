@@ -26,30 +26,30 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
   ]
   const registeredEvents: helpers.RegisteredEvent[] = [
     // event, the command input required to register it, and one of events reducing entities (to evaluate result)
-    { input: { fruit: 'apple' }, event: 'FruitOrdered', reducingEntity: 'Fruit' },
-    { input: { fruit: 'pear', drink: 'water' }, event: 'DrinkOrdered', reducingEntity: 'Drink' },
-    { input: { fruit: 'candy' }, event: 'CandyOrdered', reducingEntity: 'Tattle' },
+    { input: { fruit: 'apple' }, event: 'FruitOrdered', evaluatedEntity: 'Fruit' },
+    { input: { fruit: 'pear', drink: 'water' }, event: 'DrinkOrdered', evaluatedEntity: 'Drink' },
+    { input: { fruit: 'candy' }, event: 'CandyOrdered', evaluatedEntity: 'Tattle' },
   ]
   const workToBeDone: helpers.WorkToBeDone[] = [
     {
       workToDo: "capitalize the 'fruit' value",
       // command input that should trigger the work (currently only one input is supported by test method below)
-      testedInputParameter: {
+      testInputParameter: {
         name: 'fruit',
         value: 'apple',
       },
       // entity to evaluate work done
-      reducingEntity: 'Fruit',
+      evaluatedEntity: 'Fruit',
       // expected result if work done (currently presumes entity field name matches input parameter name)
       expectedResult: 'Apple',
     },
     {
       workToDo: 'tattle when candy is ordered',
-      testedInputParameter: {
+      testInputParameter: {
         name: 'fruit',
         value: 'candy',
       },
-      reducingEntity: 'Tattle',
+      evaluatedEntity: 'Tattle',
       expectedResult: true,
     },
   ]
@@ -236,10 +236,10 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
   ): Promise<boolean> => {
     // reference values
     const id = faker.datatype.uuid()
-    const primaryKey = `${work.reducingEntity}-${id}-snapshot`
+    const primaryKey = `${work.evaluatedEntity}-${id}-snapshot`
 
     // submit command
-    const commandVariables = { [work.testedInputParameter.name]: work.testedInputParameter.value, id }
+    const commandVariables = { [work.testInputParameter.name]: work.testInputParameter.value, id }
     await graphQLclient.mutate({ variables: commandVariables, mutation: commandMutation })
 
     // wait until action is processed
@@ -264,7 +264,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
     // ...if expected result should be a value
     if (typeof work.expectedResult === 'string' || typeof work.expectedResult === 'number') {
       const filteredResults = lookupResults.filter(
-        (record) => record.value[work.testedInputParameter.name as string] === work.expectedResult
+        (record) => record.value[work.testInputParameter.name as string] === work.expectedResult
       )
       evaluationResult = filteredResults.length > 0
     }
@@ -293,7 +293,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
   ): Promise<boolean> => {
     // event store query expects primary key that matches `entityTypeName_entityID_kind` value
     const id = faker.datatype.uuid()
-    const primaryKey = `${registeredEvent.reducingEntity}-${id}-event`
+    const primaryKey = `${registeredEvent.evaluatedEntity}-${id}-event`
 
     // command variables
     const commandVariables = { ...registeredEvent.input, id }

@@ -2,40 +2,41 @@
 
 > ### ⭐️ Heads Up ⭐️
 >
-> This is currently a work in progress - and fairly opinionated.
+> This is currently a work in progress - and opinionated.
 >
 > I'm sharing it mid-stream in case it can help others work through similar
-> questions or better understand Booster's currently undocumented
+> questions for testing [Booster](https://framework.booster.cloud/) apps, 
+> or better understand Booster's currently undocumented
 > [built-in testing tool](https://github.com/boostercloud/booster/tree/main/packages/application-tester).
 >
 > (I think) I'm fairly skilled in creating event-driven applications,
 > working with Booster, and creating tools in JS/Typescript, but I'm
 > relatively new to writing tests.
 >
-> Most of this work is based on common-sense (hopefully) but if there
+> Most of this work is based on a common-sense approach but if there
 > something critical you think I'm missing in my thinking or approach,
 > please let me know.
 >
-> Currently, I'm sorting the details for...
+> Currently, I'm sorting the details for -
 >
 > - the levels and types of testing that make sense (to me) for a
 >   Booster/<abbr title='Event Driven Application'>EDA</abbr> app
 > - the helper utilities that can help support, standardize, and simplify tests
 > - better documentation of everything going on here
 >
-> ...across some real-world projects, and my hope is to update this repo as
-> I learn what works best in practice.
+> I'm doing this next across some real-world projects. My hope is to update 
+> this repo as I learn what works best in practice.
 >
-> In the mean-time, see the notes below for a high-level overview and dig into the
+> In the mean-time, please see the notes below for a high-level overview and dig into the
 > code examples for specifics.
 
 ## TL;DR
 
 - Goal is to provide patterns and utilities to more quickly and reliably test Booster apps.
-- Using [Vitest](https://vitest.dev/), but can update this to another testing framework.
-- Uses Booster's `application-tester` [package](](https://github.com/boostercloud/booster/tree/main/packages/application-tester).)
+- This repo example is using [Vitest](https://vitest.dev/) for testing, but this can be updated to another testing framework.
+- Using Booster's `application-tester` [package](](https://github.com/boostercloud/booster/tree/main/packages/application-tester).)
   across all examples to simplify testing.
-- Includes [updates](https://github.com/ClaytonFarr/booster-testing-utilities/tree/master/test/test-helpers/custom-local-test-helper)
+- Includes [custom updates](https://github.com/ClaytonFarr/booster-testing-utilities/tree/master/test/test-helpers/custom-local-test-helper)
   to Booster's local-infrastructure 'test-helper' package to allow the
   Booster `application-tester` to be used for both local and deployed tests. (The current
   Booster package functionality for local testing is incomplete).
@@ -46,10 +47,12 @@
   (e.g. commands, entities, etc.).
 - Also includes helper utilities that [abstract test creation](https://github.com/ClaytonFarr/booster-testing-utilities#testing-automation) 
   substantially, inferring as much data and intention as possible from the tested files themselves 
-  (via code or special @ notation). The jury is still out what level of this is useful (e.g. don't 
-  want to accidentally create self-fulfilling tests).
+  via code or special @ notation. _(The jury is still out what level of this is useful (e.g. don't 
+  want to accidentally create self-fulfilling tests)._
 
-## Relevant Files
+## Test Relevant Files in Repo
+
+_The things you'll want to bring into your own project to replicate this testing approach._
 
 - dependencies and 'test:\*' scripts: `/package.json`
 - Booster config setup: `/src/config/config.ts` _(updates to 'local' & 'test' environments)_

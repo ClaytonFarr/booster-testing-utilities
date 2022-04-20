@@ -20,6 +20,7 @@ export class LocalQueries {
     // - primaryKey format: {affectedEntityTypeName}-{entityID}-event|snapshot
     const entityTypeName = primaryKey.split('-')[0]
     const entityID = primaryKey.replace(`${entityTypeName}-`, '').replace('-event', '').replace('-snapshot', '')
+    const entityKind = primaryKey.match(/-event|-snapshot/)[0].replace('-', '')
 
     // grab items
     let items: EventEnvelope[]
@@ -31,8 +32,10 @@ export class LocalQueries {
     if (!latestFirst) items = items.reverse()
 
     // filter items for request
-    items = items.filter((item) => JSON.stringify(item).includes(entityID))
-    items = items.filter((item) => JSON.stringify(item).includes(entityTypeName)) // this may be unnecessary
+    items = items.filter((item) => item.kind === entityKind) // filter by kind
+    items = items.filter((item) => JSON.stringify(item).includes(entityID)) // filter by test ID
+    items = items.filter((item) => JSON.stringify(item).includes(entityTypeName)) // this entity type
+
     return items
   }
 

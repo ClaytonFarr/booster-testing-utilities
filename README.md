@@ -30,6 +30,10 @@
 > In the mean-time, please see the notes below for a high-level overview and dig into the
 > code examples for specifics.
 
+## Updates
+
+- [Repo updates](https://github.com/ClaytonFarr/booster-testing-utilities#repo-updates) since initial publish
+
 ## TL;DR
 
 - Goal is to provide patterns and utilities to more quickly and reliably test Booster apps.
@@ -271,3 +275,13 @@ _Note: some helper utilities abstract the test creation substantially (e.g. with
     - can be `true` or `false` if want to test yes/no of work done
     - can be a string to test work result value
       - currently presumes result value exists on field with same name as @work00-inputs `name`
+
+
+## Repo Updates
+
+_Pseudo-changelog of updates to repo since initial publish - helpful if you cloned an earlier version and want to see what's new._
+
+**04-20-22**
+
+- Updated `getRegisteredEvents` method regex to better match various code patterns.
+- Added `start:testing` script and comment to package.json to utilize MODE=test variable for Vitest tests.

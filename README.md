@@ -289,5 +289,6 @@ _Pseudo-changelog of updates to repo since initial publish - helpful if you clon
   - update `getWorkToBeDone` utility to use '-shouldHave' syntax
   - add `getWorkToBeDone` errors if a @work comment set is incomplete
   - update `wasWorkDone` utility to search across nested record data for '-shouldHave' value
+  - relabel 'parameter' to 'input' across utilities and automation @syntax
 - Updated `custom-local-test-helper/local-queries`
   - filter results by kind ('event' v 'snapshot')

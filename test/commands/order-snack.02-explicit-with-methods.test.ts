@@ -10,7 +10,7 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
   // Define Test Data
   // -----------------------------------------------------------------------------------------------
   const authorizedRoles = ['all'] // optional auth roles (if 'all' or empty array, auth not tested)
-  const acceptedParameters: helpers.Parameter[] = [
+  const acceptedInputs: helpers.Input[] = [
     { name: 'fruit', type: 'String', required: true },
     { name: 'drink', type: 'String', validExample: 'water' },
     { name: 'id', type: 'ID' },
@@ -25,10 +25,7 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
     {
       workToDo: "capitalize the 'fruit' value",
       // command input that should trigger the work (currently only one input is supported by test method below)
-      testInputParameter: {
-        name: 'fruit',
-        value: 'apple',
-      },
+      testInput: { name: 'fruit', value: 'apple' },
       // entity to evaluate work done
       evaluatedEntity: 'Fruit',
       // expected result if work done
@@ -36,10 +33,7 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
     },
     {
       workToDo: 'tattle when candy is ordered',
-      testInputParameter: {
-        name: 'fruit',
-        value: 'candy',
-      },
+      testInput: { name: 'fruit', value: 'candy' },
       evaluatedEntity: 'Tattle',
       shouldHave: true,
     },
@@ -48,12 +42,12 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
   // Create Test Resources
   // -----------------------------------------------------------------------------------------------
   const graphQLclient = authorizedRoles[0] === 'all' ? unAuthGraphQLclient : authGraphQLclient(authorizedRoles[0])
-  const acceptedParameterNames = helpers.getAcceptedParameterNames(acceptedParameters)
-  const allVariables = helpers.createAllVariables(acceptedParameters)
-  const requiredVariables = helpers.createRequiredVariables(acceptedParameters)
-  const emptyVariables = helpers.createEmptyVariables(acceptedParameters)
-  const invalidDataTypeVariables = helpers.createInvalidDataTypeVariables(acceptedParameters)
-  const commandMutation = helpers.createCommandMutation(commandName, acceptedParameters)
+  const acceptedInputNames = helpers.getAcceptedInputNames(acceptedInputs)
+  const allVariables = helpers.createAllVariables(acceptedInputs)
+  const requiredVariables = helpers.createRequiredVariables(acceptedInputs)
+  const emptyVariables = helpers.createEmptyVariables(acceptedInputs)
+  const invalidDataTypeVariables = helpers.createInvalidDataTypeVariables(acceptedInputs)
+  const commandMutation = helpers.createCommandMutation(commandName, acceptedInputs)
 
   // TESTS
   // -----------------------------------------------------------------------------------------------
@@ -61,15 +55,15 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
   // It should perform correct AUTHORIZATION
   if (authorizedRoles[0] !== 'all') helpers.createRolesTests(authorizedRoles, commandMutation, requiredVariables)
 
-  // It should accept ALL PARAMETERS
-  helpers.createAcceptAllParametersTest(commandMutation, allVariables, acceptedParameterNames, graphQLclient)
+  // It should accept ALL INPUTS
+  helpers.createAcceptAllInputsTest(commandMutation, allVariables, acceptedInputNames, graphQLclient)
 
   // It should fail if MISSING REQUIRED input(s)
-  if (acceptedParameters.filter((param) => param.required).length > 0)
+  if (acceptedInputs.filter((input) => input.required).length > 0)
     helpers.createMissingRequiredInputTest(commandMutation, graphQLclient)
 
   // It should succeed with ONLY REQUIRED input(s)
-  if (acceptedParameters.filter((param) => param.required).length > 0)
+  if (acceptedInputs.filter((input) => input.required).length > 0)
     helpers.createSubmitOnlyRequiredInputsTest(commandMutation, requiredVariables, graphQLclient)
 
   // It should reject EMPTY inputs

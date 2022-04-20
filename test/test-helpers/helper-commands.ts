@@ -22,19 +22,19 @@ export const generateCommandTests = (commandName: string): void => {
     // -----------------------------------------------------------------------------------------------
     const commandFileContents = getCommandFileContents(commandName)
     const authorizedRoles: Role[] | string[] = getRoles(commandName, commandFileContents)
-    const acceptedParameters: Parameter[] = getAcceptedParameters(commandName, commandFileContents)
+    const acceptedInputs: Input[] = getAcceptedInputs(commandName, commandFileContents)
     const workToDeDone: WorkToBeDone[] = getWorkToBeDone(commandName, commandFileContents)
     const registeredEvents: RegisteredEvent[] = getRegisteredEvents(commandName, commandFileContents)
 
     // Create Test Resources
     // -----------------------------------------------------------------------------------------------
     const graphQLclient = authorizedRoles[0] === 'all' ? unAuthGraphQLclient : authGraphQLclient(authorizedRoles[0])
-    const acceptedParameterNames = getAcceptedParameterNames(acceptedParameters)
-    const allVariables = createAllVariables(acceptedParameters)
-    const requiredVariables = createRequiredVariables(acceptedParameters)
-    const emptyVariables = createEmptyVariables(acceptedParameters)
-    const invalidDataTypeVariables = createInvalidDataTypeVariables(acceptedParameters)
-    const commandMutation = createCommandMutation(commandName, acceptedParameters)
+    const acceptedInputNames = getAcceptedInputNames(acceptedInputs)
+    const allVariables = createAllVariables(acceptedInputs)
+    const requiredVariables = createRequiredVariables(acceptedInputs)
+    const emptyVariables = createEmptyVariables(acceptedInputs)
+    const invalidDataTypeVariables = createInvalidDataTypeVariables(acceptedInputs)
+    const commandMutation = createCommandMutation(commandName, acceptedInputs)
 
     // TESTS
     // -----------------------------------------------------------------------------------------------
@@ -42,15 +42,15 @@ export const generateCommandTests = (commandName: string): void => {
     // It should perform correct AUTHORIZATION
     if (authorizedRoles[0] !== 'all') createRolesTests(authorizedRoles, commandMutation, requiredVariables)
 
-    // It should accept ALL PARAMETERS
-    createAcceptAllParametersTest(commandMutation, allVariables, acceptedParameterNames, graphQLclient)
+    // It should accept ALL INPUTS
+    createAcceptAllInputsTest(commandMutation, allVariables, acceptedInputNames, graphQLclient)
 
     // It should fail if MISSING REQUIRED input(s)
-    if (acceptedParameters.filter((param) => param.required).length > 0)
+    if (acceptedInputs.filter((input) => input.required).length > 0)
       createMissingRequiredInputTest(commandMutation, graphQLclient)
 
     // It should succeed with ONLY REQUIRED input(s)
-    if (acceptedParameters.filter((param) => param.required).length > 0)
+    if (acceptedInputs.filter((input) => input.required).length > 0)
       createSubmitOnlyRequiredInputsTest(commandMutation, requiredVariables, graphQLclient)
 
     // It should reject EMPTY inputs
@@ -166,64 +166,63 @@ export const wasAuthorizedRequestAllowed = async (
   return !!mutationResult?.data
 }
 
-// Command Parameters
+// Command Inputs
 // =====================================================================================================================
 
-export interface Parameter {
+export interface Input {
   name: string
   type: string
   required?: boolean
   validExample?: string | number | boolean
 }
 
-export const getAcceptedParameters = (
+export const getAcceptedInputs = (
   commandName: string,
   commandFileContents?: Buffer,
   rootPath = 'src/commands/'
-): Parameter[] => {
-  const acceptedParameters: Parameter[] = []
+): Input[] => {
+  const acceptedInputs: Input[] = []
   const fileContents = commandFileContents || getCommandFileContents(commandName, rootPath)
-  const parameterStatements = fileContents.toString().match(/(readonly.*)/g)
-  parameterStatements.forEach((parameterString) => {
-    const parameter: Parameter = { name: '', type: '' }
+  const inputStatements = fileContents.toString().match(/(readonly.*)/g)
+  inputStatements.forEach((inputString) => {
+    const input: Input = { name: '', type: '' }
     // remove 'prefix'
-    parameterString = parameterString.replace('readonly ', '')
+    inputString = inputString.replace('readonly ', '')
     // parse '@validExample' comment value, if present
     let validExample: string | number | boolean
-    if (parameterString.includes('@validExample')) {
-      validExample = parameterString
+    if (inputString.includes('@validExample')) {
+      validExample = inputString
         .match(/@validExample:\s*(.*)/)[1]
         .replace(/"/g, '')
         .replace(/'/g, '')
-      parameter.validExample = validExample
+      input.validExample = validExample
     }
     // remove comment if present
-    parameterString = parameterString.replace(/.\/\/.*/, '')
+    inputString = inputString.replace(/.\/\/.*/, '')
     // remove comma if present from multi-lines
-    parameterString = parameterString.replace(',', '')
-    // note if the parameter is required
-    parameter.required = !parameterString.includes('?') // a '?' = optional parameter
-    // capture parameter name
-    parameter.name = parameterString.match(/\w+/)[0]
-    // capture parameter type + update to match GraphQL types
-    const paramType = parameterString.match(/\w+$/)[0]
-    if (paramType === 'string') parameter.type = 'String'
-    if (paramType === 'number') parameter.type = 'Int'
-    if (paramType === 'boolean') parameter.type = 'Boolean'
-    if (paramType === 'UUID') parameter.type = 'ID'
-    acceptedParameters.push(parameter)
+    inputString = inputString.replace(',', '')
+    // note if the input is required
+    input.required = !inputString.includes('?') // a '?' = optional input
+    // capture input name
+    input.name = inputString.match(/\w+/)[0]
+    // capture input type + update to match GraphQL types
+    const inputType = inputString.match(/\w+$/)[0]
+    if (inputType === 'string') input.type = 'String'
+    if (inputType === 'number') input.type = 'Int'
+    if (inputType === 'boolean') input.type = 'Boolean'
+    if (inputType === 'UUID') input.type = 'ID'
+    acceptedInputs.push(input)
   })
-  return acceptedParameters
+  return acceptedInputs
 }
 
-export const getAcceptedParameterNames = (acceptedParameters: Parameter[]): string[] =>
-  acceptedParameters.map(({ name }) => name)
+export const getAcceptedInputNames = (acceptedInputs: Input[]): string[] => acceptedInputs.map(({ name }) => name)
 
-// Generate Parameter Variable Options
+// Generate Input Variable Options
 // ---------------------------------------------------------------------------------------------------------------------
 
-export const createAllVariables = (acceptedParameters: Parameter[]): string => {
-  const variables = acceptedParameters
+export const createAllVariables = (acceptedInputs: Input[]): string => {
+  const variables = acceptedInputs
     .map(({ name, type, validExample }) => {
       if (validExample && typeof validExample === 'string') return `"${name}": "${validExample}"`
       if (validExample && typeof validExample !== 'string') return `"${name}": ${validExample}`
@@ -238,8 +237,8 @@ export const createAllVariables = (acceptedParameters: Parameter[]): string => {
   return JSON.parse(variables)
 }
 
-export const createRequiredVariables = (acceptedParameters: Parameter[]): string => {
-  const variables = acceptedParameters
+export const createRequiredVariables = (acceptedInputs: Input[]): string => {
+  const variables = acceptedInputs
     .map(({ name, type, required, validExample }) => {
       if (required) {
         if (validExample && typeof validExample === 'string') return `"${name}": "${validExample}"`
@@ -256,8 +255,8 @@ export const createRequiredVariables = (acceptedParameters: Parameter[]): string
   return JSON.parse(variables)
 }
 
-export const createEmptyVariables = (acceptedParameters: Parameter[]): string => {
-  const variables = acceptedParameters
+export const createEmptyVariables = (acceptedInputs: Input[]): string => {
+  const variables = acceptedInputs
     .map(({ name }) => `"${name}": ""`)
     .filter(Boolean)
     .join(', ')
@@ -265,8 +264,8 @@ export const createEmptyVariables = (acceptedParameters: Parameter[]): string =>
   return JSON.parse(variables)
 }
 
-export const createInvalidDataTypeVariables = (acceptedParameters: Parameter[]): string => {
-  const variables = acceptedParameters
+export const createInvalidDataTypeVariables = (acceptedInputs: Input[]): string => {
+  const variables = acceptedInputs
     .map(({ name, type }) => {
       if (type === 'String') return `"${name}": ${faker.datatype.number()}`
       if (type === 'Int') return `"${name}": "${faker.random.word()}"`
@@ -279,16 +278,16 @@ export const createInvalidDataTypeVariables = (acceptedParameters: Parameter[]):
   return JSON.parse(variables)
 }
 
-// Parameter Tests
+// Input Tests
 // ---------------------------------------------------------------------------------------------------------------------
 
-export const createAcceptAllParametersTest = (
+export const createAcceptAllInputsTest = (
   commandMutation: DocumentNode,
   allVariables: string,
-  acceptedParameterNames: string[],
+  acceptedInputNames: string[],
   graphQLclient: ApolloClient<NormalizedCacheObject>
 ): void => {
-  it(`should accept the parameters: ${acceptedParameterNames.join(', ')}`, async () => {
+  it(`should accept the inputs: ${acceptedInputNames.join(', ')}`, async () => {
     // command variables
     const commandVariables = allVariables
 
@@ -301,7 +300,7 @@ export const createAcceptAllParametersTest = (
     // evaluate command response
     expect(mutationResult).not.toBeNull()
     expect(mutationResult?.data).toBeTruthy()
-    // console.log(`✅ [Command Accepts Expected Params] ${JSON.stringify(mutationResult?.data)}`)
+    // console.log(`✅ [Command Accepts Expected Inputs] ${JSON.stringify(mutationResult?.data)}`)
   })
 }
 
@@ -396,15 +395,15 @@ export const createRejectInvalidInputTypesTest = (
 // Command Mutation
 // =====================================================================================================================
 
-export const createCommandMutation = (commandName: string, acceptedParameters: Parameter[]): DocumentNode => {
-  const inputsVariables = createMutationInputsVariables(acceptedParameters)
-  const inputs = createMutationInputs(acceptedParameters)
+export const createCommandMutation = (commandName: string, acceptedInputs: Input[]): DocumentNode => {
+  const inputsVariables = createMutationInputsVariables(acceptedInputs)
+  const inputs = createMutationInputs(acceptedInputs)
   const content = createMutationContent(commandName, inputsVariables, inputs)
   return gql.gql(content)
 }
 
-export const createMutationInputsVariables = (acceptedParameters: Parameter[]): string => {
-  const inputsVariables = acceptedParameters
+export const createMutationInputsVariables = (acceptedInputs: Input[]): string => {
+  const inputsVariables = acceptedInputs
     .map(({ name, type, required }) => {
       if (required) return `$${name}: ${type}!`
       return `$${name}: ${type}`
@@ -413,8 +412,8 @@ export const createMutationInputsVariables = (acceptedParameters: Parameter[]): 
   return inputsVariables
 }
 
-export const createMutationInputs = (acceptedParameters: Parameter[]): string => {
-  const inputs: string[] | string = acceptedParameters
+export const createMutationInputs = (acceptedInputs: Input[]): string => {
+  const inputs: string[] | string = acceptedInputs
     .map(({ name }) => {
       return `${name}: $${name}`
     })
@@ -435,7 +434,7 @@ export const createMutationContent = (commandName: string, inputsVariables: stri
 
 export interface WorkToBeDone {
   workToDo: string
-  testInputParameter?: {
+  testInput?: {
     name: string
     value: string
   }
@@ -469,7 +468,7 @@ export const getWorkToBeDone = (
     // create empty object for work item
     const thisWorkToBeDone: WorkToBeDone = {
       workToDo: '',
-      testInputParameter: {
+      testInput: {
         name: '',
         value: '',
       },
@@ -486,14 +485,14 @@ export const getWorkToBeDone = (
       .replace(`@work${workItemIndexRef}: `, '')
     thisWorkToBeDone.workToDo = workToDo
 
-    // parse work input parameter (if not present, exit with error)
-    let testInputParameter = workItem
+    // parse work input (if not present, exit with error)
+    let testInput = workItem
       .filter(([statement, index]) => statement.includes(`@work${index}-inputs: `))[0]?.[0]
       .replace(`@work${workItemIndexRef}-inputs: `, '')
     // ...convert JSON string to object
-    testInputParameter = Function('"use strict";return (' + testInputParameter + ')')()
-    if (!testInputParameter) throw Error(`Missing '@work${workItemIndexRef}-inputs' comment in ${commandName}`)
-    thisWorkToBeDone.testInputParameter = testInputParameter
+    testInput = Function('"use strict";return (' + testInput + ')')()
+    if (!testInput) throw Error(`Missing '@work${workItemIndexRef}-inputs' comment in ${commandName}`)
+    thisWorkToBeDone.testInput = testInput
 
     // parse reducing entity (if not present, exit)
     const evaluatedEntity = workItem
@@ -515,7 +514,7 @@ export const getWorkToBeDone = (
     if (!shouldHave) throw Error(`Missing '@work${workItemIndexRef}-shouldHave' comment in ${commandName}`)
     thisWorkToBeDone.shouldHave = shouldHave
 
-    if (!workToDo && (testInputParameter || evaluatedEntity || shouldHave))
+    if (!workToDo && (testInput || evaluatedEntity || shouldHave))
       throw Error(`Missing '@work${workItemIndexRef}' description in ${commandName}`)
 
     // add work item to work to be done
@@ -557,7 +556,7 @@ export const wasWorkDone = async (
   const primaryKey = `${work.evaluatedEntity}-${id}-snapshot`
 
   // submit command
-  const commandVariables = { [work.testInputParameter.name]: work.testInputParameter.value, id }
+  const commandVariables = { [work.testInput.name]: work.testInput.value, id }
   await graphQLclient.mutate({ variables: commandVariables, mutation: commandMutation })
 
   // wait until action is processed
@@ -626,7 +625,7 @@ export const getRegisteredEvents = (
       if (inputValue === 'boolean') inputValue = faker.datatype.boolean()
       if (inputValue === 'id') inputValue = faker.datatype.uuid()
 
-      // add parameter name with value
+      // add input name with value
       thisInput[input.split(':')[0]] = inputValue
       inputs = { ...inputs, ...thisInput }
     })

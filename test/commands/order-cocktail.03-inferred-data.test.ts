@@ -11,19 +11,19 @@ describe(`[Inferred Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
   // -----------------------------------------------------------------------------------------------
   const commandFileContents = helpers.getCommandFileContents(commandName)
   const authorizedRoles: helpers.Role[] | string[] = helpers.getRoles(commandName, commandFileContents)
-  const acceptedParameters: helpers.Parameter[] = helpers.getAcceptedParameters(commandName, commandFileContents)
+  const acceptedInputs: helpers.Input[] = helpers.getAcceptedInputs(commandName, commandFileContents)
   const workToDeDone: helpers.WorkToBeDone[] = helpers.getWorkToBeDone(commandName, commandFileContents)
   const registeredEvents: helpers.RegisteredEvent[] = helpers.getRegisteredEvents(commandName, commandFileContents)
 
   // Create Test Resources
   // -----------------------------------------------------------------------------------------------
   const graphQLclient = authorizedRoles[0] === 'all' ? unAuthGraphQLclient : authGraphQLclient(authorizedRoles[0])
-  const acceptedParameterNames = helpers.getAcceptedParameterNames(acceptedParameters)
-  const allVariables = helpers.createAllVariables(acceptedParameters)
-  const requiredVariables = helpers.createRequiredVariables(acceptedParameters)
-  const emptyVariables = helpers.createEmptyVariables(acceptedParameters)
-  const invalidDataTypeVariables = helpers.createInvalidDataTypeVariables(acceptedParameters)
-  const commandMutation = helpers.createCommandMutation(commandName, acceptedParameters)
+  const acceptedInputNames = helpers.getAcceptedInputNames(acceptedInputs)
+  const allVariables = helpers.createAllVariables(acceptedInputs)
+  const requiredVariables = helpers.createRequiredVariables(acceptedInputs)
+  const emptyVariables = helpers.createEmptyVariables(acceptedInputs)
+  const invalidDataTypeVariables = helpers.createInvalidDataTypeVariables(acceptedInputs)
+  const commandMutation = helpers.createCommandMutation(commandName, acceptedInputs)
 
   // TESTS
   // -----------------------------------------------------------------------------------------------
@@ -31,15 +31,15 @@ describe(`[Inferred Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
   // It should perform correct AUTHORIZATION
   if (authorizedRoles[0] !== 'all') helpers.createRolesTests(authorizedRoles, commandMutation, requiredVariables)
 
-  // It should accept ALL PARAMETERS
-  helpers.createAcceptAllParametersTest(commandMutation, allVariables, acceptedParameterNames, graphQLclient)
+  // It should accept ALL INPUTS
+  helpers.createAcceptAllInputsTest(commandMutation, allVariables, acceptedInputNames, graphQLclient)
 
   // It should fail if MISSING REQUIRED input(s)
-  if (acceptedParameters.filter((param) => param.required).length > 0)
+  if (acceptedInputs.filter((input) => input.required).length > 0)
     helpers.createMissingRequiredInputTest(commandMutation, graphQLclient)
 
   // It should succeed with ONLY REQUIRED input(s)
-  if (acceptedParameters.filter((param) => param.required).length > 0)
+  if (acceptedInputs.filter((input) => input.required).length > 0)
     helpers.createSubmitOnlyRequiredInputsTest(commandMutation, requiredVariables, graphQLclient)
 
   // It should reject EMPTY inputs

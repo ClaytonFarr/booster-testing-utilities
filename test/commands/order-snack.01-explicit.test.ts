@@ -19,7 +19,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
   // Define Test Data
   // -----------------------------------------------------------------------------------------------
   const authorizedRoles = ['all'] // optional auth roles (if 'all' or empty array, auth not tested)
-  const acceptedParameters: helpers.Parameter[] = [
+  const acceptedInputs: helpers.Input[] = [
     { name: 'fruit', type: 'String', required: true },
     { name: 'drink', type: 'String', validExample: 'water' },
     { name: 'id', type: 'ID' },
@@ -34,10 +34,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
     {
       workToDo: "capitalize the 'fruit' value",
       // command input that should trigger the work (currently only one input is supported by test method below)
-      testInputParameter: {
-        name: 'fruit',
-        value: 'apple',
-      },
+      testInput: { name: 'fruit', value: 'apple' },
       // entity to evaluate work done
       evaluatedEntity: 'Fruit',
       // expected result if work done
@@ -45,10 +42,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
     },
     {
       workToDo: 'tattle when candy is ordered',
-      testInputParameter: {
-        name: 'fruit',
-        value: 'candy',
-      },
+      testInput: { name: 'fruit', value: 'candy' },
       evaluatedEntity: 'Tattle',
       shouldHave: true,
     },
@@ -57,12 +51,12 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
   // Create Test Resources
   // -----------------------------------------------------------------------------------------------
   const graphQLclient = authorizedRoles[0] === 'all' ? unAuthGraphQLclient : authGraphQLclient(authorizedRoles[0])
-  const acceptedParameterNames = helpers.getAcceptedParameterNames(acceptedParameters)
-  const allVariables = helpers.createAllVariables(acceptedParameters)
-  const requiredVariables = helpers.createRequiredVariables(acceptedParameters)
-  const emptyVariables = helpers.createEmptyVariables(acceptedParameters)
-  const invalidDataTypeVariables = helpers.createInvalidDataTypeVariables(acceptedParameters)
-  const commandMutation = helpers.createCommandMutation(commandName, acceptedParameters)
+  const acceptedInputNames = helpers.getAcceptedInputNames(acceptedInputs)
+  const allVariables = helpers.createAllVariables(acceptedInputs)
+  const requiredVariables = helpers.createRequiredVariables(acceptedInputs)
+  const emptyVariables = helpers.createEmptyVariables(acceptedInputs)
+  const invalidDataTypeVariables = helpers.createInvalidDataTypeVariables(acceptedInputs)
+  const commandMutation = helpers.createCommandMutation(commandName, acceptedInputs)
   const resultWaitTime = 5000
 
   //
@@ -112,9 +106,9 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
     })
   }
 
-  // It should accept ALL PARAMETERS
+  // It should accept ALL INPUTS
   // -----------------------------------------------------------------------------------------------
-  it(`should accept the parameters: ${acceptedParameterNames.join(', ')}`, async () => {
+  it(`should accept the inputs: ${acceptedInputNames.join(', ')}`, async () => {
     // command variables
     const commandVariables = allVariables
 
@@ -127,12 +121,12 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
     // evaluate command response
     expect(mutationResult).not.toBeNull()
     expect(mutationResult?.data).toBeTruthy()
-    // console.log(`✅ [Command Accepts Expected Params] ${JSON.stringify(mutationResult?.data)}`)
+    // console.log(`✅ [Command Accepts Expected Inputs] ${JSON.stringify(mutationResult?.data)}`)
   })
 
   // It should fail if MISSING REQUIRED input(s)
   // -----------------------------------------------------------------------------------------------
-  if (acceptedParameters.filter((param) => param.required).length > 0) {
+  if (acceptedInputs.filter((input) => input.required).length > 0) {
     it('should throw an error when required inputs are missing', async () => {
       // command variables
       const commandVariables = {} // no variables = no required inputs
@@ -154,7 +148,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
 
   // It should succeed with ONLY REQUIRED input(s)
   // -----------------------------------------------------------------------------------------------
-  if (acceptedParameters.filter((param) => param.required).length > 0) {
+  if (acceptedInputs.filter((input) => input.required).length > 0) {
     it('should succeed when submitting only required inputs', async () => {
       // command variables
       const commandVariables = requiredVariables
@@ -239,7 +233,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
     const primaryKey = `${work.evaluatedEntity}-${id}-snapshot`
 
     // submit command
-    const commandVariables = { [work.testInputParameter.name]: work.testInputParameter.value, id }
+    const commandVariables = { [work.testInput.name]: work.testInput.value, id }
     await graphQLclient.mutate({ variables: commandVariables, mutation: commandMutation })
 
     // wait until action is processed
@@ -264,7 +258,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
     // ...if expected result should be a value
     if (typeof work.shouldHave === 'string' || typeof work.shouldHave === 'number') {
       const filteredResults = lookupResults.filter(
-        (record) => record.value[work.testInputParameter.name as string] === work.shouldHave
+        (record) => record.value[work.testInput.name as string] === work.shouldHave
       )
       evaluationResult = filteredResults.length > 0
     }

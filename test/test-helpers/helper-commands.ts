@@ -440,8 +440,7 @@ export interface WorkToBeDone {
     value: string
   }
   evaluatedEntity: string
-  evaluatedField?: string
-  expectedResult: boolean | string | number
+  shouldHave: boolean | string | number
 }
 
 export const getWorkToBeDone = (
@@ -475,8 +474,7 @@ export const getWorkToBeDone = (
         value: '',
       },
       evaluatedEntity: '',
-      evaluatedField: '',
-      expectedResult: '',
+      shouldHave: '',
     }
 
     // create work item ref that matches index used in comments
@@ -484,14 +482,14 @@ export const getWorkToBeDone = (
 
     // parse work description (if not present, exit)
     const workToDo = workItem
-      .filter(([statement, index]) => statement.includes(`@work${index}: `))[0][0]
+      .filter(([statement, index]) => statement.includes(`@work${index}: `))[0]?.[0]
       .replace(`@work${workItemIndexRef}: `, '')
     if (!workToDo) return
     thisWorkToBeDone.workToDo = workToDo
 
     // parse work input parameter (if not present, exit)
     let testInputParameter = workItem
-      .filter(([statement, index]) => statement.includes(`@work${index}-inputs: `))[0][0]
+      .filter(([statement, index]) => statement.includes(`@work${index}-inputs: `))[0]?.[0]
       .replace(`@work${workItemIndexRef}-inputs: `, '')
     // ...convert JSON string to object
     testInputParameter = Function('"use strict";return (' + testInputParameter + ')')()
@@ -500,7 +498,7 @@ export const getWorkToBeDone = (
 
     // parse reducing entity (if not present, exit)
     const evaluatedEntity = workItem
-      .filter(([statement, index]) => statement.includes(`@work${index}-entity: `))[0][0]
+      .filter(([statement, index]) => statement.includes(`@work${index}-entity: `))[0]?.[0]
       .replace(`@work${workItemIndexRef}-entity: `, '')
       .replace(/'/g, '')
       .replace(/"/g, '')
@@ -508,15 +506,15 @@ export const getWorkToBeDone = (
     thisWorkToBeDone.evaluatedEntity = evaluatedEntity
 
     // parse expected result (if not present, exit)
-    let expectedResult = workItem
-      .filter(([statement, index]) => statement.includes(`@work${index}-result: `))[0][0]
-      .replace(`@work${workItemIndexRef}-result: `, '')
+    let shouldHave = workItem
+      .filter(([statement, index]) => statement.includes(`@work${index}-shouldHave: `))[0]?.[0]
+      .replace(`@work${workItemIndexRef}-shouldHave: `, '')
       .replace(/'/g, '')
       .replace(/"/g, '')
-    if (expectedResult === 'true') expectedResult = true
-    if (expectedResult === 'false') expectedResult = false
-    if (!expectedResult) return
-    thisWorkToBeDone.expectedResult = expectedResult
+    if (shouldHave === 'true') shouldHave = true
+    if (shouldHave === 'false') shouldHave = false
+    if (!shouldHave) return
+    thisWorkToBeDone.shouldHave = shouldHave
 
     // add work item to work to be done
     workToBeDone.push(thisWorkToBeDone)
@@ -574,27 +572,17 @@ export const wasWorkDone = async (
 
   // evaluate result
   const lookupResults = (await applicationUnderTest.query.events(primaryKey)) as unknown as EventEnvelope[]
+
   let evaluationResult: boolean
   // ...if a result should simply exist
-  if (work.expectedResult === true) evaluationResult = lookupResults.length > 0
+  if (work.shouldHave === true) evaluationResult = lookupResults.length > 0
   // ...if a result should NOT exist
-  if (work.expectedResult === false) evaluationResult = lookupResults.length === 0
-  // ...if expected result should be a value
-  if (typeof work.expectedResult === 'string' || typeof work.expectedResult === 'number') {
-    let filteredResults: unknown[]
-    // ...if 'evaluatedField' field is present, use it
-    if (work.evaluatedField)
-      filteredResults = lookupResults.filter(
-        (record) => record.value[work.evaluatedField as string] === work.expectedResult
-      )
-    // ...if not, fallback to 'testInputParameter' name field
-    if (!work.evaluatedField && work.testInputParameter.name)
-      filteredResults = lookupResults.filter(
-        (record) => record.value[work.testInputParameter.name as string] === work.expectedResult
-      )
-    // ...if neither field is present, throw error
-    if (!work.evaluatedField && !work.testInputParameter.name)
-      throw new Error(`No field to evaluate for '${work.workToDo}'`)
+  if (work.shouldHave === false) evaluationResult = lookupResults.length === 0
+  // ...if expected result should include a value
+  if (typeof work.shouldHave === 'string' || typeof work.shouldHave === 'number') {
+    const filteredResults = lookupResults.filter((record) =>
+      JSON.stringify(record.value).includes(work.shouldHave.toString())
+    )
     evaluationResult = filteredResults.length > 0
   }
   return evaluationResult

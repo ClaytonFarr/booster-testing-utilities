@@ -11,8 +11,12 @@
     "node": ">=14.0.0"
   },
   "types": "lib/index.d.ts",
+  "comments": {
+    "start:testing-script": "When testing locally Vitest MODE=test env var is not available to app server; if needed use this script to start app server to add var manually"
+  },
   "scripts": {
     "start": "boost start -e local",
+    "start:testing": "MODE=test boost start -e local",
     "deploy-test": "boost deploy -e test",
     "deploy-dev": "boost deploy -e development",
     "deploy-prod": "boost deploy -e production",

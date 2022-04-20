@@ -278,7 +278,7 @@ _Note: some helper utilities abstract the test creation substantially (e.g. with
 
 ## Repo Updates
 
-_Pseudo-changelog of updates to repo since initial publish - helpful if you cloned an earlier version and want to see what's new._
+_Pseudo-changelog of updates to repo since initial publish - helpful if you cloned an earlier version and want to check what's new._
 
 **04-20-22**
 

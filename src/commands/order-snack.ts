@@ -63,10 +63,10 @@ export class OrderSnack {
   }
 }
 
-// @work01-inputs: { name: 'fruit', value: 'apple' }
+// @work01-input: { name: 'fruit', value: 'apple' }
 // @work01-entity: 'Fruit'
 // @work01-shouldHave: 'Apple'
 
-// @work02-inputs: { name: 'fruit', value: 'candy' }
+// @work02-input: { name: 'fruit', value: 'candy' }
 // @work02-entity: 'Tattle'
 // @work02-shouldHave: true

@@ -487,11 +487,11 @@ export const getWorkToBeDone = (
 
     // parse work input (if not present, exit with error)
     let testInput = workItem
-      .filter(([statement, index]) => statement.includes(`@work${index}-inputs: `))[0]?.[0]
-      .replace(`@work${workItemIndexRef}-inputs: `, '')
+      .filter(([statement, index]) => statement.includes(`@work${index}-input: `))[0]?.[0]
+      .replace(`@work${workItemIndexRef}-input: `, '')
     // ...convert JSON string to object
     testInput = Function('"use strict";return (' + testInput + ')')()
-    if (!testInput) throw Error(`Missing '@work${workItemIndexRef}-inputs' comment in ${commandName}`)
+    if (!testInput) throw Error(`Missing '@work${workItemIndexRef}-input' comment in ${commandName}`)
     thisWorkToBeDone.testInput = testInput
 
     // parse reducing entity (if not present, exit)

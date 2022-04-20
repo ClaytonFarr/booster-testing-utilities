@@ -283,5 +283,11 @@ _Pseudo-changelog of updates to repo since initial publish - helpful if you clon
 
 **04-20-22**
 
-- Updated `getRegisteredEvents` method regex to better match various code patterns.
 - Added `start:testing` script and comment to package.json to utilize MODE=test variable for Vitest tests.
+- Changed `@work00-result` syntax to `@work00-shouldHave`
+- Updated `test-helpers/helper-command`
+  - update `getRegisteredEvents` utility regex to better match various code patterns.
+  - update `getWorkToBeDone` utility to use '-shouldHave' syntax
+  - update `wasWorkDone` utility to search across nested record data for '-shouldHave' value
+- Updated `custom-local-test-helper/local-queries`
+  - filter results by kind ('event' v 'snapshot')

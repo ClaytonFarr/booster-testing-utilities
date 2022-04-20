@@ -65,8 +65,8 @@ export class OrderSnack {
 
 // @work01-inputs: { name: 'fruit', value: 'apple' }
 // @work01-entity: 'Fruit'
-// @work01-result: 'Apple'
+// @work01-shouldHave: 'Apple'
 
 // @work02-inputs: { name: 'fruit', value: 'candy' }
 // @work02-entity: 'Tattle'
-// @work02-result: true
+// @work02-shouldHave: true

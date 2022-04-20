@@ -31,8 +31,8 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
       },
       // entity to evaluate work done
       evaluatedEntity: 'Fruit',
-      // expected result if work done (currently presumes entity field name matches input parameter name)
-      expectedResult: 'Apple',
+      // expected result if work done
+      shouldHave: 'Apple',
     },
     {
       workToDo: 'tattle when candy is ordered',
@@ -41,7 +41,7 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
         value: 'candy',
       },
       evaluatedEntity: 'Tattle',
-      expectedResult: true,
+      shouldHave: true,
     },
   ]
 

@@ -25,7 +25,7 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
         value: 'gimlet',
       },
       evaluatedEntity: 'Drink',
-      expectedResult: 'Gimlet',
+      shouldHave: 'Gimlet',
     },
   ]
 

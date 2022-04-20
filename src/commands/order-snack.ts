@@ -11,7 +11,7 @@ export class OrderSnack {
   public constructor(
     readonly fruit: string,
     readonly drink?: string, // @validExample: 'water'
-    readonly id?: UUID // an optional ID param is included for tests
+    readonly id?: UUID // optional input used by automated tests
   ) {}
 
   public static async handle(command: OrderSnack, register: Register): Promise<void> {
@@ -30,7 +30,7 @@ export class OrderSnack {
     // register events
     register.events(
       new FruitOrdered(
-        // @requiredInput: { fruit: string }
+        // @requiredInputs: { fruit: string }
         // @aReducingEntity: 'Fruit'
         orderId,
         capitalize(command.fruit),
@@ -40,7 +40,7 @@ export class OrderSnack {
     if (command.drink) {
       register.events(
         new DrinkOrdered(
-          // @requiredInput: { fruit: string, drink: 'water' }
+          // @requiredInputs: { fruit: string, drink: 'water' }
           // @aReducingEntity: 'Drink'
           orderId,
           capitalize(command.drink),
@@ -52,7 +52,7 @@ export class OrderSnack {
     if (command.fruit.toLowerCase() === 'candy') {
       register.events(
         new CandyOrdered(
-          // @requiredInput: { fruit: 'candy' }
+          // @requiredInputs: { fruit: 'candy' }
           // @aReducingEntity: 'Tattle'
           orderId,
           new Date().toISOString(),
@@ -63,10 +63,10 @@ export class OrderSnack {
   }
 }
 
-// @work01-input: { name: 'fruit', value: 'apple' }
+// @work01-inputs: { fruit: 'apple', clayton: 'cool' }
 // @work01-entity: 'Fruit'
 // @work01-shouldHave: 'Apple'
 
-// @work02-input: { name: 'fruit', value: 'candy' }
+// @work02-inputs: { fruit: 'candy' }
 // @work02-entity: 'Tattle'
 // @work02-shouldHave: true

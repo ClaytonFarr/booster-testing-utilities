@@ -434,10 +434,7 @@ export const createMutationContent = (commandName: string, inputsVariables: stri
 
 export interface WorkToBeDone {
   workToDo: string
-  testInput?: {
-    name: string
-    value: string
-  }
+  testInputs: Record<string, unknown>
   evaluatedEntity: string
   shouldHave: boolean | string | number
 }
@@ -468,10 +465,7 @@ export const getWorkToBeDone = (
     // create empty object for work item
     const thisWorkToBeDone: WorkToBeDone = {
       workToDo: '',
-      testInput: {
-        name: '',
-        value: '',
-      },
+      testInputs: {},
       evaluatedEntity: '',
       shouldHave: '',
     }
@@ -486,13 +480,25 @@ export const getWorkToBeDone = (
     thisWorkToBeDone.workToDo = workToDo
 
     // parse work input (if not present, exit with error)
-    let testInput = workItem
-      .filter(([statement, index]) => statement.includes(`@work${index}-input: `))[0]?.[0]
-      .replace(`@work${workItemIndexRef}-input: `, '')
-    // ...convert JSON string to object
-    testInput = Function('"use strict";return (' + testInput + ')')()
-    if (!testInput) throw Error(`Missing '@work${workItemIndexRef}-input' comment in ${commandName}`)
-    thisWorkToBeDone.testInput = testInput
+    let inputs = {}
+    const testInputString = workItem
+      .filter(([statement, index]) => statement.includes(`@work${index}-inputs: `))[0]?.[0]
+      .replace(/@work\d*-inputs:\s*|\s|{|}/g, '')
+    if (!testInputString) throw Error(`Missing '@work${workItemIndexRef}-inputs' comment in ${commandName}`)
+    const testInputGroups = testInputString.split(',') // capture multiple inputs if present
+    testInputGroups.forEach((input: string) => {
+      const thisInput = {}
+      let inputValue: string | number | boolean = input.split(':')[1].replace(/'/g, '').replace(/"/g, '')
+      // create suitable example value if a generic label was used
+      if (inputValue === 'string') inputValue = faker.random.word()
+      if (inputValue === 'number') inputValue = faker.datatype.number()
+      if (inputValue === 'boolean') inputValue = faker.datatype.boolean()
+      if (inputValue === 'id') inputValue = faker.datatype.uuid()
+      // add input name with value
+      thisInput[input.split(':')[0]] = inputValue
+      inputs = { ...inputs, ...thisInput }
+    })
+    thisWorkToBeDone.testInputs = inputs
 
     // parse reducing entity (if not present, exit)
     const evaluatedEntity = workItem
@@ -514,7 +520,7 @@ export const getWorkToBeDone = (
     if (!shouldHave) throw Error(`Missing '@work${workItemIndexRef}-shouldHave' comment in ${commandName}`)
     thisWorkToBeDone.shouldHave = shouldHave
 
-    if (!workToDo && (testInput || evaluatedEntity || shouldHave))
+    if (!workToDo && (testInputString || evaluatedEntity || shouldHave))
       throw Error(`Missing '@work${workItemIndexRef}' description in ${commandName}`)
 
     // add work item to work to be done
@@ -556,7 +562,7 @@ export const wasWorkDone = async (
   const primaryKey = `${work.evaluatedEntity}-${id}-snapshot`
 
   // submit command
-  const commandVariables = { [work.testInput.name]: work.testInput.value, id }
+  const commandVariables = { ...work.testInputs, id }
   await graphQLclient.mutate({ variables: commandVariables, mutation: commandMutation })
 
   // wait until action is processed
@@ -606,14 +612,16 @@ export const getRegisteredEvents = (
   const registeredEvents: RegisteredEvent[] = []
   const fileContents = commandFileContents || getCommandFileContents(commandName, rootPath)
   const eventStatements = [
-    ...fileContents.toString().matchAll(/new\s*(\w*)\(\n*.*\/\/\s*(@requiredInput.*)\n*.*\/\/\s*(@aReducingEntity.*)/g),
+    ...fileContents
+      .toString()
+      .matchAll(/new\s*(\w*)\(\n*.*\/\/\s*(@requiredInputs.*)\n*.*\/\/\s*(@aReducingEntity.*)/g),
   ]
   eventStatements.forEach((eventString) => {
     const thisEvent: RegisteredEvent = { input: {}, event: '', evaluatedEntity: '' }
 
     // create query variable string for event
     let inputs = {}
-    const inputString = eventString[2].replace(/@requiredInput:\s*|\s|{|}/g, '')
+    const inputString = eventString[2].replace(/@requiredInputs:\s*|\s|{|}/g, '')
     const inputGroups = inputString.split(',') // capture multiple inputs if present
     inputGroups.forEach((input) => {
       const thisInput = {}

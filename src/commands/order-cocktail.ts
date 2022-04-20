@@ -9,7 +9,7 @@ import { Mom, Dad } from '../roles'
 export class OrderCocktail {
   public constructor(
     readonly drink: string,
-    readonly id?: UUID // an optional ID param is included for tests
+    readonly id?: UUID // optional input used by automated tests
   ) {}
 
   public static async handle(command: OrderCocktail, register: Register): Promise<void> {
@@ -27,7 +27,7 @@ export class OrderCocktail {
     if (command.drink) {
       register.events(
         new DrinkOrdered(
-          // @requiredInput: { drink: string }
+          // @requiredInputs: { drink: string }
           // @aReducingEntity: 'Drink'
           orderId,
           capitalize(command.drink),
@@ -38,6 +38,6 @@ export class OrderCocktail {
   }
 }
 
-// @work01-input: { name: 'drink', value: 'gimlet' }
+// @work01-inputs: { drink: 'gimlet' }
 // @work01-entity: 'Drink'
 // @work01-shouldHave: 'Gimlet'

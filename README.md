@@ -259,7 +259,7 @@ _Note: some helper utilities abstract the test creation substantially (e.g. with
 
 - must be first arguments in event constructor
 - must be in this order:
-  - `@requiredInput`: input variables required to trigger event
+  - `@requiredInputs`: input variables required to trigger event
   - `@aReducingEntity`: an entity that will be updated by event (required to lookup event in datastore)
 
 **Command: Work keys (@work00)**
@@ -268,13 +268,12 @@ _Note: some helper utilities abstract the test creation substantially (e.g. with
 - can include any unique (within document) two-digit key
 - require:
   - `@work00`: brief description of work to be done
-  - `@work00-inputs`: input name and value (e.g. { name: 'fruit', value: 'apple' })
-    - currently presumes work can be triggered by single input parameter
-  - `@work01-entity`: an entity that will be updated by event (required to lookup event in datastore)
-  - `@work01-result`: value to test if work was done
+  - `@work00-inputs`: input name and value (e.g. { fruit: 'apple', drink: string })
+    - can use explicit value or generic (e.g. string, number, boolean, id) to generate fake values
+  - `@work01-entity`: an entity that will be updated by event (required to lookup event snapshot in datastore)
+  - `@work01-shouldHave`: value to test if work was done
     - can be `true` or `false` if want to test yes/no of work done
     - can be a string to test work result value
-      - currently presumes result value exists on field with same name as @work00-inputs `name`
 
 ## Repo Updates
 
@@ -284,6 +283,7 @@ _Pseudo-changelog of updates to repo since initial publish - helpful if you clon
 
 - Added `start:testing` script and comment to package.json to utilize MODE=test variable for Vitest tests.
 - Changed `@work00-result` syntax to `@work00-shouldHave`
+- Normalized input format/syntax for command inputs and work-to-be-done inputs
 - Updated `test-helpers/helper-command`
   - update `getRegisteredEvents` utility regex to better match various code patterns.
   - update `getWorkToBeDone` utility to use '-shouldHave' syntax

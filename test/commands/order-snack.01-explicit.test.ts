@@ -34,7 +34,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
     {
       workToDo: "capitalize the 'fruit' value",
       // command input that should trigger the work (currently only one input is supported by test method below)
-      testInput: { name: 'fruit', value: 'apple' },
+      testInputs: { fruit: 'apple' },
       // entity to evaluate work done
       evaluatedEntity: 'Fruit',
       // expected result if work done
@@ -42,7 +42,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
     },
     {
       workToDo: 'tattle when candy is ordered',
-      testInput: { name: 'fruit', value: 'candy' },
+      testInputs: { fruit: 'candy' },
       evaluatedEntity: 'Tattle',
       shouldHave: true,
     },
@@ -233,7 +233,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
     const primaryKey = `${work.evaluatedEntity}-${id}-snapshot`
 
     // submit command
-    const commandVariables = { [work.testInput.name]: work.testInput.value, id }
+    const commandVariables = { ...work.testInputs, id }
     await graphQLclient.mutate({ variables: commandVariables, mutation: commandMutation })
 
     // wait until action is processed
@@ -257,8 +257,8 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
     if (work.shouldHave === false) evaluationResult = lookupResults.length === 0
     // ...if expected result should be a value
     if (typeof work.shouldHave === 'string' || typeof work.shouldHave === 'number') {
-      const filteredResults = lookupResults.filter(
-        (record) => record.value[work.testInput.name as string] === work.shouldHave
+      const filteredResults = lookupResults.filter((record) =>
+        JSON.stringify(record.value).includes(work.shouldHave.toString())
       )
       evaluationResult = filteredResults.length > 0
     }

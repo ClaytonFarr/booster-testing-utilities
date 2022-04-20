@@ -20,7 +20,7 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
   const workToDeDone: helpers.WorkToBeDone[] = [
     {
       workToDo: "capitalize the 'drink' value",
-      testInput: { name: 'drink', value: 'gimlet' },
+      testInputs: { drink: 'gimlet' },
       evaluatedEntity: 'Drink',
       shouldHave: 'Gimlet',
     },

@@ -29,7 +29,7 @@ describe('[Explicit Data + Helper Methods] Order Cocktail Command', async () => 
   const workToDeDone: helpers.WorkToBeDone[] = [
     {
       workToDo: "capitalize the 'drink' value",
-      testInput: { name: 'drink', value: 'gimlet' },
+      testInputs: { drink: 'gimlet' },
       evaluatedEntity: 'Drink',
       shouldHave: 'Gimlet',
     },
@@ -220,7 +220,7 @@ describe('[Explicit Data + Helper Methods] Order Cocktail Command', async () => 
     const primaryKey = `${work.evaluatedEntity}-${id}-snapshot`
 
     // submit command
-    const commandVariables = { [work.testInput.name]: work.testInput.value, id }
+    const commandVariables = { ...work.testInputs, id }
     await graphQLclient.mutate({ variables: commandVariables, mutation: commandMutation })
 
     // wait until action is processed
@@ -244,8 +244,8 @@ describe('[Explicit Data + Helper Methods] Order Cocktail Command', async () => 
     if (work.shouldHave === false) evaluationResult = lookupResults.length === 0
     // ...if expected result should be a value
     if (typeof work.shouldHave === 'string' || typeof work.shouldHave === 'number') {
-      const filteredResults = lookupResults.filter(
-        (record) => record.value[work.testInput.name as string] === work.shouldHave
+      const filteredResults = lookupResults.filter((record) =>
+        JSON.stringify(record.value).includes(work.shouldHave.toString())
       )
       evaluationResult = filteredResults.length > 0
     }

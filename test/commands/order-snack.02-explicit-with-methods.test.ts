@@ -25,7 +25,7 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
     {
       workToDo: "capitalize the 'fruit' value",
       // command input that should trigger the work (currently only one input is supported by test method below)
-      testInput: { name: 'fruit', value: 'apple' },
+      testInputs: { fruit: 'apple' },
       // entity to evaluate work done
       evaluatedEntity: 'Fruit',
       // expected result if work done
@@ -33,7 +33,7 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
     },
     {
       workToDo: 'tattle when candy is ordered',
-      testInput: { name: 'fruit', value: 'candy' },
+      testInputs: { fruit: 'candy' },
       evaluatedEntity: 'Tattle',
       shouldHave: true,
     },

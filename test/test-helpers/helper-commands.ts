@@ -617,9 +617,7 @@ export const getRegisteredEvents = (
   const registeredEvents: RegisteredEvent[] = []
   const fileContents = commandFileContents || getCommandFileContents(commandName, rootPath)
   const eventStatements = [
-    ...fileContents
-      .toString()
-      .matchAll(/register\.events\(\n*\s*new\s*(\w*)\(\n*.*\/\/\s*(@requiredInput.*)\n*.*\/\/\s*(@aReducingEntity.*)/g),
+    ...fileContents.toString().matchAll(/new\s*(\w*)\(\n*.*\/\/\s*(@requiredInput.*)\n*.*\/\/\s*(@aReducingEntity.*)/g),
   ]
   eventStatements.forEach((eventString) => {
     const thisEvent: RegisteredEvent = { input: {}, event: '', evaluatedEntity: '' }

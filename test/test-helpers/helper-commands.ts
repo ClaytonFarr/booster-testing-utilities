@@ -484,16 +484,15 @@ export const getWorkToBeDone = (
     const workToDo = workItem
       .filter(([statement, index]) => statement.includes(`@work${index}: `))[0]?.[0]
       .replace(`@work${workItemIndexRef}: `, '')
-    if (!workToDo) return
     thisWorkToBeDone.workToDo = workToDo
 
-    // parse work input parameter (if not present, exit)
+    // parse work input parameter (if not present, exit with error)
     let testInputParameter = workItem
       .filter(([statement, index]) => statement.includes(`@work${index}-inputs: `))[0]?.[0]
       .replace(`@work${workItemIndexRef}-inputs: `, '')
     // ...convert JSON string to object
     testInputParameter = Function('"use strict";return (' + testInputParameter + ')')()
-    if (!testInputParameter) return
+    if (!testInputParameter) throw Error(`Missing '@work${workItemIndexRef}-inputs' comment in ${commandName}`)
     thisWorkToBeDone.testInputParameter = testInputParameter
 
     // parse reducing entity (if not present, exit)
@@ -502,7 +501,7 @@ export const getWorkToBeDone = (
       .replace(`@work${workItemIndexRef}-entity: `, '')
       .replace(/'/g, '')
       .replace(/"/g, '')
-    if (!evaluatedEntity) return
+    if (!evaluatedEntity) throw Error(`Missing '@work${workItemIndexRef}-entity' comment in ${commandName}`)
     thisWorkToBeDone.evaluatedEntity = evaluatedEntity
 
     // parse expected result (if not present, exit)
@@ -513,8 +512,11 @@ export const getWorkToBeDone = (
       .replace(/"/g, '')
     if (shouldHave === 'true') shouldHave = true
     if (shouldHave === 'false') shouldHave = false
-    if (!shouldHave) return
+    if (!shouldHave) throw Error(`Missing '@work${workItemIndexRef}-shouldHave' comment in ${commandName}`)
     thisWorkToBeDone.shouldHave = shouldHave
+
+    if (!workToDo && (testInputParameter || evaluatedEntity || shouldHave))
+      throw Error(`Missing '@work${workItemIndexRef}' description in ${commandName}`)
 
     // add work item to work to be done
     workToBeDone.push(thisWorkToBeDone)

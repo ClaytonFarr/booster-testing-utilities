@@ -276,7 +276,6 @@ _Note: some helper utilities abstract the test creation substantially (e.g. with
     - can be a string to test work result value
       - currently presumes result value exists on field with same name as @work00-inputs `name`
 
-
 ## Repo Updates
 
 _Pseudo-changelog of updates to repo since initial publish - helpful if you cloned an earlier version and want to see what's new._
@@ -288,6 +287,7 @@ _Pseudo-changelog of updates to repo since initial publish - helpful if you clon
 - Updated `test-helpers/helper-command`
   - update `getRegisteredEvents` utility regex to better match various code patterns.
   - update `getWorkToBeDone` utility to use '-shouldHave' syntax
+  - add `getWorkToBeDone` errors if a @work comment set is incomplete
   - update `wasWorkDone` utility to search across nested record data for '-shouldHave' value
 - Updated `custom-local-test-helper/local-queries`
   - filter results by kind ('event' v 'snapshot')

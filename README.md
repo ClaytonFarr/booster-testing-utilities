@@ -208,7 +208,7 @@ _Note: 'process' in this context is something that can be initiated by an actor 
 - 🚧 should accept specific parameter(s)
 - 🚧 should perform certain work
 - 🚧 should save specific data to entity(ies)
-- 🚧 may make specific data visible for entity(ies)
+- 🚧 may make specific data visible from entity(ies)
 
 #### A Command
 
@@ -315,6 +315,8 @@ _Pseudo-changelog of updates to repo since initial publish - helpful if you clon
 - Updated notes
   - added "Source File Requirements" section with notes about currently required `tid` in commands
   - added notes to "Testing Local Environment" about methods that backup/restore local datastores in `/test/globalSetup.ts`
+- Updated `test-helpers/helper-command`
+  - fix `wasWorkDone` and `wasEventRegistered` methods to utilize a `tid` value manually set in command request
 
 **04-20-22**
 

@@ -558,11 +558,11 @@ export const wasWorkDone = async (
   resultWaitTime = 5000
 ): Promise<boolean> => {
   // reference values
-  const id = faker.datatype.uuid().toString() // test 'id' param is set to 'string' type to other accept custom values
-  const primaryKey = `${work.evaluatedEntity}-${id}-snapshot`
+  const tid = faker.datatype.uuid().toString() // test id input ('tid') is set to 'string' type to other accept custom values
+  const primaryKey = `${work.evaluatedEntity}-${tid}-snapshot`
 
   // submit command
-  const commandVariables = { ...work.testInputs, id }
+  const commandVariables = { ...work.testInputs, tid }
   await graphQLclient.mutate({ variables: commandVariables, mutation: commandMutation })
 
   // wait until action is processed
@@ -673,11 +673,11 @@ export const wasEventRegistered = async (
   resultWaitTime = 5000
 ): Promise<boolean> => {
   // event store query expects primary key that matches `entityTypeName_entityID_kind` value
-  const id = faker.datatype.uuid().toString() // test 'id' param is set to 'string' type to other accept custom values
-  const primaryKey = `${registeredEvent.evaluatedEntity}-${id}-event`
+  const tid = faker.datatype.uuid().toString() // test id input ('tid') is set to 'string' type to other accept custom values
+  const primaryKey = `${registeredEvent.evaluatedEntity}-${tid}-event`
 
   // command variables
-  const commandVariables = { ...registeredEvent.input, id }
+  const commandVariables = { ...registeredEvent.input, tid }
 
   // submit command
   try {

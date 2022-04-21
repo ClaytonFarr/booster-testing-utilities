@@ -9,14 +9,14 @@ import { Mom, Dad } from '../roles'
 export class OrderCocktail {
   public constructor(
     readonly drink: string,
-    readonly id?: string // optional input used by automated tests
+    readonly tid?: string // input used by test utilities
   ) {}
 
   public static async handle(command: OrderCocktail, register: Register): Promise<void> {
     // check inputs
     if (!command.drink || command.drink === '') throw new Error('What drink does today call for?')
 
-    const orderId = command.id || UUID.generate()
+    const orderId = command.tid || UUID.generate()
     const orderTakenBy = ['Erik', 'Abi'][Math.floor(Math.random() * 2)]
 
     // do work

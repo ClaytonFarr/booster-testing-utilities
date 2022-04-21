@@ -12,7 +12,7 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
   const authorizedRoles = ['Mom', 'Dad'] // optional auth roles (if 'all' or empty array, auth not tested)
   const acceptedInputs: helpers.Input[] = [
     { name: 'drink', type: 'String', required: true },
-    { name: 'id', type: 'String' },
+    { name: 'tid', type: 'String' },
   ]
   const registeredEvents: helpers.RegisteredEvent[] = [
     { input: { drink: 'gimlet' }, event: 'DrinkOrdered', evaluatedEntity: 'Drink' },

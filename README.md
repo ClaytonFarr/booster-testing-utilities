@@ -19,7 +19,7 @@
 >
 > Currently, I'm sorting the details for -
 >
-> - the levels and types of testing that make sense (to me) for a
+> - the levels and types of testing that make sense for a
 >   Booster/<abbr title='Event Driven Application'>EDA</abbr> app
 > - the helper utilities that can help support, standardize, and simplify tests
 > - better documentation of everything going on here
@@ -64,7 +64,7 @@ _The things you'll want to bring into your own project to replicate this testing
 - testing constant references: `/test/constant.ts`
 - testing global startup/tear-down: `/test/globalSetup.ts` _(backup/restore datastores for local testing)_
 - testing helper utilities: `/test/test-helpers/*` _(utilities to simplify/standardize tests)_
-- testing JWT key: `/keys/testing-public.key` _(to decode JWT with application-tester)_
+- testing JWT key: `/keys/testing-public.key` _(to decode JWTs created by application-tester)_
 - 'framework-provider-local-infrastructure' custom 'test-helper': `/test/test-helpers/custom-local-test-helper/*`
   _(in-app 'package' override until Booster package completes functionality for local testing)_
 
@@ -92,11 +92,11 @@ _The things you'll want to bring into your own project to replicate this testing
 This application is purposely simple, but complete with common elements like roles,
 validation, handler processing, event-handlers, and projected read-models to test.
 
-Sorely lacking some more comprehensive documentation here, but take a peek
-at `src/commands/order-snack.ts` and ``src/commands/order-cocktail.ts` to get a feel
-for how the application works. (BTW, the funny '@syntax' comments included within
+Sorely lacking more comprehensive documentation on the details yet, but take a peek
+at `src/commands/order-snack.ts` and `src/commands/order-cocktail.ts` to get a feel
+for how the application works. (The funny '@syntax' comments included within
 these are part of an idea to
-[possibly help automate some tests](https://github.com/ClaytonFarr/booster-testing-utilities#testing-automation) -
+[possibly help automate some tests](https://github.com/ClaytonFarr/booster-testing-utilities#testing-automation) —
 jury is still out on whether this makes sense or not).
 
 ### Running Tests
@@ -117,12 +117,13 @@ _Local Testing Datastores_
   - currently, this is a simple backup/restore mechanism that can encounter issues (see below)
     - if it is critical to preserve local datastores' state before testing, also back these up manually
   - backup and restore is done via setup and teardown methods in `/test/globalSetup.ts`
-  -   when testing is _started_ it will backup all files within the `/.booster` directory (normally, there should only be 2 files)
-    - while testing is _running_ you can inspect and edit how testing is affecting the datastores (`event.json` and `read_models.json` files)
-    - when testing is _stopped_ it will delete the testing datastores and restore the original ones
-  - when testing _crashes_ (e.g. due to a test error), the teardown methods do not run and both the testing and backup datastores are left in place
-    - if you start testing again, the setup methods will reproduce all of these files, creating more backups and not being able to successfully restore the original datastores
-    - in these cases you'll need to eventually clean up, and optionally restore, the local datastores manually
+- backup/restore lifecycle
+  - when testing is _started_ it will backup all files within the `/.booster` directory (normally, there should only be 2 files)
+  - while testing is _running_ you can inspect and edit how testing is affecting the datastores (`event.json` and `read_models.json` files)
+  - when testing is _stopped_ it will delete the testing datastores and restore the original ones
+- when testing _crashes_ (e.g. due to a test error), the teardown methods do not run and both the testing and backup datastores are left in place
+  - if you start testing again, the setup methods will reproduce all of these files, creating more backups and not being able to successfully restore the original datastores
+  - in these cases you'll need to eventually clean up, and optionally restore, the local datastores manually
 
 **Testing Deployed Environment (AWS)**
 
@@ -135,7 +136,7 @@ _Local Testing Datastores_
 
 **Source File Requirements**
 
-There are a few things the tests need or can use in Command source files:
+There are a few things tests currently need or can use in Command source files:
 
 - an `tid` input parameter
   - this is currently required for tests to find the entries they created in the datastores
@@ -170,34 +171,36 @@ Specific integrations testing?
 My understanding and appreciation are certainly limited by my current testing experience but
 I'm operating on a few assumptions at the moment:
 
-- the Booster framework appears to have good unit/integration testing coverage of its core functionality
-- if we can rely on these to ensure the framework is working as intended (e.g. commands processing
+1. the Booster framework appears to have good unit/integration testing coverage of its core functionality
+2. if we can rely on these to ensure the framework is working as intended (e.g. commands processing
   successfully, events reducing into entities, entities projecting into read models, etc.) than the
   job at hand for us is to test:
-  - 1. the intended behavior of the application and its processes
-  - 2. the code hygiene of the application's parts (i.e. are we following a desired practice like input validation?)
-- we can test intended behavior/processes via e2e/functional tests
+  - the intended behavior of the application and its processes
+  - the code hygiene of the application's parts (i.e. are we following a desired practice like input validation?)
+3. we can test intended behavior/processes via e2e/functional tests
   - if e2e/functional tests can be created more quickly and reliably, we may not need to create
     (as many) unit tests to confirm the functionality of the individual parts
-- we can test code hygiene via pseudo-unit tests
+4. we can test code hygiene via pseudo-unit tests
 
 Again, this is definitely an area I'm operating on some shallow knowledge and big assumptions,
-but hopeful there is some leverage to be found to help make testing quick and part of the creation
-process while still being reliable.
+but hopeful there is leverage to be found that can help make testing quick and part of the creation
+process, while still being reliable.
 
 ### Tested Patterns
 
 For testing, I'm trying to think backward from the responsibility and/or expected effect(s)
 of each element in the system to determine what assertions and expectations are necessary.
-The goal is to sort out what's the least we can get away with testing (above and beyond  
+The goal is to sort out what's the least we can get away with testing (above and beyond
 the framework testing that's already occurring) to confirm expected functionality and behavior.
+
+_Legend_
 
 - ✅ = example and utility added
 - ⏩ = will likely be derivative of an existing example/utility
 - 🚧 = working on this currently
 - 🤔 = not certain yet if this is needed; may be accounted for in Booster framework infrastructure tests
 
-**A Process**
+#### A Process
 
 _Note: 'process' in this context is something that can be initiated by an actor (command) or on a schedule (scheduled-command), may have 0 or more event-handlers to perform its work, and results in some expected change in the system (i.e. a request and activity that may span more than a single handler)._
 
@@ -207,7 +210,7 @@ _Note: 'process' in this context is something that can be initiated by an actor 
 - 🚧 should save specific data to entity(ies)
 - 🚧 may make specific data visible for entity(ies)
 
-**A Command**
+#### A Command
 
 _Note: finished building out items below and currently re-evaluating which of these are relevant to asserting/testing expected behavior or code hygiene vs. testing the reliability of framework._
 
@@ -221,7 +224,7 @@ _Note: finished building out items below and currently re-evaluating which of th
 - ✅ should register specific event(s)
 - ? should be able to receive same command repeatedly or specific number of times
 
-**A Scheduled Command**
+#### A Scheduled Command
 
 - should be called at specific time(s)
 - ⏩ should accept specific parameter(s)
@@ -233,7 +236,7 @@ _Note: finished building out items below and currently re-evaluating which of th
 - ⏩ should register specific event(s)
 - ref: https://github.com/boostercloud/booster/blob/main/packages/framework-integration-tests/integration/provider-unaware/functionality/scheduled-commands.integration.ts
 
-**An Event Handler**
+#### An Event Handler
 
 - should be called when a specific event is emitted
 - ⏩ should accept specific parameter(s)
@@ -246,19 +249,19 @@ _Note: finished building out items below and currently re-evaluating which of th
 - should be able to receive same event without duplicating work
 - should be able to process events out of order
 
-**An Event**
+#### An Event
 
 - should have specific parameter(s)
-- ? should update specific entity(ies)
+- ? should update specific entity(ies) (not sure yet if knowledge of this should really be an event concern)
 
-**An Entity**
+#### An Entity
 
 - should have specific parameter(s)
 - should reduce specific event(s)
 - ? may update specific read model(s)
 - ref: https://github.com/boostercloud/booster/blob/6448db061ba7d11bd91bbd6525e4b646fb8205a9/packages/framework-provider-local/test/helpers/event-helper.ts
 
-**A Read Model**
+#### A Read Model
 
 - ⏩ should perform correct authorization
 - ⏩ should accept specific parameter(s)
@@ -276,18 +279,18 @@ to [test-specific utilities](https://github.com/ClaytonFarr/booster-testing-util
 
 #### Testing Automation
 
-_Note: some helper utilities abstract the test creation substantially (e.g. within 'helpers-command.ts') and attempt to infer as much data as possible from the tested files themselves. Jury is still out what level of this is useful (e.g. don't want to accidentally create self-fulfilling tests)._
+_Note: some helper utilities abstract the test creation substantially (e.g. within `helpers-command.ts`) and attempt to infer as much data as possible from the tested files themselves. Jury is still out what level of this is useful (e.g. don't want to accidentally create self-fulfilling tests)._
 
-`@syntax` is optional for test automation.
+@syntax comments are optional for test automation.
 
-**Command: Event keys**
+**Command: Registered Events @comments**
 
 - must be first arguments in event constructor
 - must be in this order:
   - `@requiredInputs`: input variables required to trigger event
   - `@aReducingEntity`: an entity that will be updated by event (required to lookup event in datastore)
 
-**Command: Work keys (@work00)**
+**Command: Work to be Done @comments**
 
 - can be any where in document
 - can include any unique (within document) two-digit key

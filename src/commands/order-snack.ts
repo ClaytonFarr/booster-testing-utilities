@@ -65,7 +65,7 @@ export class OrderSnack {
 
 // @work01-inputs: { fruit: 'apple' }
 // @work01-entity: 'Fruit'
-// @work01-shouldHave: 'Apple'
+// @work01-shouldHave: ['Apple']
 
 // @work02-inputs: { fruit: 'candy' }
 // @work02-entity: 'Tattle'

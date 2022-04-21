@@ -31,7 +31,7 @@ describe('[Explicit Data + Helper Methods] Order Cocktail Command', async () => 
       workToDo: "capitalize the 'drink' value",
       testInputs: { drink: 'gimlet' },
       evaluatedEntity: 'Drink',
-      shouldHave: 'Gimlet',
+      shouldHave: ['Gimlet'],
     },
   ]
 
@@ -238,17 +238,24 @@ describe('[Explicit Data + Helper Methods] Order Cocktail Command', async () => 
     // evaluate result
     const lookupResults = (await applicationUnderTest.query.events(primaryKey)) as unknown as EventEnvelope[]
     let evaluationResult: boolean
+
     // ...if a result should simply exist
     if (work.shouldHave === true) evaluationResult = lookupResults.length > 0
+
     // ...if a result should NOT exist
     if (work.shouldHave === false) evaluationResult = lookupResults.length === 0
-    // ...if expected result should be a value
-    if (typeof work.shouldHave === 'string' || typeof work.shouldHave === 'number') {
-      const filteredResults = lookupResults.filter((record) =>
-        JSON.stringify(record.value).includes(work.shouldHave.toString())
-      )
+
+    // ...if expected result should include one or more values, check all values are present
+    if (typeof work.shouldHave === 'object') {
+      let filteredResults = lookupResults
+      work.shouldHave.forEach((expectedValue) => {
+        let filter = expectedValue
+        if (typeof expectedValue === 'string') filter = expectedValue.replace(/'/g, '').replace(/"/g, '')
+        filteredResults = filteredResults.filter((record) => JSON.stringify(record.value).includes(filter.toString()))
+      })
       evaluationResult = filteredResults.length > 0
     }
+
     return evaluationResult
   }
 

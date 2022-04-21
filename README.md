@@ -301,7 +301,8 @@ _Note: some helper utilities abstract the test creation substantially (e.g. with
   - `@work01-entity`: an entity that will be updated by event (required to lookup event snapshot in datastore)
   - `@work01-shouldHave`: value to test if work was done
     - can be `true` or `false` if want to test yes/no of work done
-    - can be a string to test work result value
+    - can be an array of one or more strings and/or numbers to test if all values exist within result
+    - [example](https://github.com/ClaytonFarr/booster-testing-utilities/blob/master/src/commands/order-snack.ts#L68)
 
 ## Repo Updates
 
@@ -317,6 +318,7 @@ _Pseudo-changelog of updates to repo since initial publish - helpful if you clon
   - added notes to "Testing Local Environment" about methods that backup/restore local datastores in `/test/globalSetup.ts`
 - Updated `test-helpers/helper-command`
   - fix `wasWorkDone` and `wasEventRegistered` methods to utilize a `tid` value manually set in command request
+  - allow multiple values to be used for Work to be Done `shouldHave` values (true|false or array of 1+ string/number values)
 
 **04-20-22**
 

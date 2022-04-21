@@ -40,4 +40,4 @@ export class OrderCocktail {
 
 // @work01-inputs: { drink: 'gimlet' }
 // @work01-entity: 'Drink'
-// @work01-shouldHave: 'Gimlet'
+// @work01-shouldHave: ['Gimlet']

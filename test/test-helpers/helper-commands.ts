@@ -436,7 +436,7 @@ export interface WorkToBeDone {
   workToDo: string
   testInputs: Record<string, unknown>
   evaluatedEntity: string
-  shouldHave: boolean | string | number
+  shouldHave: boolean | Array<string | number> // can be true|false or ['one', 'or more strings', 123]
 }
 
 export const getWorkToBeDone = (
@@ -467,7 +467,7 @@ export const getWorkToBeDone = (
       workToDo: '',
       testInputs: {},
       evaluatedEntity: '',
-      shouldHave: '',
+      shouldHave: [],
     }
 
     // create work item ref that matches index used in comments
@@ -510,17 +510,21 @@ export const getWorkToBeDone = (
     thisWorkToBeDone.evaluatedEntity = evaluatedEntity
 
     // parse expected result (if not present, exit)
-    let shouldHave = workItem
+    let shouldHave: boolean | (string | number)[]
+    const shouldHaveString = workItem
       .filter(([statement, index]) => statement.includes(`@work${index}-shouldHave: `))[0]?.[0]
-      .replace(`@work${workItemIndexRef}-shouldHave: `, '')
-      .replace(/'/g, '')
-      .replace(/"/g, '')
-    if (shouldHave === 'true') shouldHave = true
-    if (shouldHave === 'false') shouldHave = false
-    if (!shouldHave) throw Error(`Missing '@work${workItemIndexRef}-shouldHave' comment in ${commandName}`)
+      .replace(/@work\d*-shouldHave:\s*|\s|\[|\]/g, '')
+    if (!shouldHaveString) throw Error(`Missing '@work${workItemIndexRef}-shouldHave' comment in ${commandName}`)
+    if (shouldHaveString === 'true') shouldHave = true
+    if (shouldHaveString === 'false') shouldHave = false
+    if (shouldHaveString !== 'true' && shouldHaveString !== 'false') {
+      const shouldHaveArray = shouldHaveString.split(',') // capture multiple items if present
+      shouldHave = shouldHaveArray.map((item: string) => item.replace(/'/g, '').replace(/"/g, '')) // remove quotes, if present
+    }
     thisWorkToBeDone.shouldHave = shouldHave
 
-    if (!workToDo && (testInputString || evaluatedEntity || shouldHave))
+    // alert if missing work description
+    if (!workToDo && (testInputString || evaluatedEntity || shouldHaveString))
       throw Error(`Missing '@work${workItemIndexRef}' description in ${commandName}`)
 
     // add work item to work to be done
@@ -579,19 +583,25 @@ export const wasWorkDone = async (
 
   // evaluate result
   const lookupResults = (await applicationUnderTest.query.events(primaryKey)) as unknown as EventEnvelope[]
-
   let evaluationResult: boolean
+
   // ...if a result should simply exist
   if (work.shouldHave === true) evaluationResult = lookupResults.length > 0
+
   // ...if a result should NOT exist
   if (work.shouldHave === false) evaluationResult = lookupResults.length === 0
-  // ...if expected result should include a value
-  if (typeof work.shouldHave === 'string' || typeof work.shouldHave === 'number') {
-    const filteredResults = lookupResults.filter((record) =>
-      JSON.stringify(record.value).includes(work.shouldHave.toString())
-    )
+
+  // ...if expected result should include one or more values, check all values are present
+  if (typeof work.shouldHave === 'object') {
+    let filteredResults = lookupResults
+    work.shouldHave.forEach((expectedValue) => {
+      let filter = expectedValue
+      if (typeof expectedValue === 'string') filter = expectedValue.replace(/'/g, '').replace(/"/g, '')
+      filteredResults = filteredResults.filter((record) => JSON.stringify(record.value).includes(filter.toString()))
+    })
     evaluationResult = filteredResults.length > 0
   }
+
   return evaluationResult
 }
 

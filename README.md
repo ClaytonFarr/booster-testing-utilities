@@ -111,6 +111,19 @@ jury is still out on whether this makes sense or not).
   - in this terminal, will see output from Vitest test runner
   - within this terminal, press `a` to rerun all tests, if wanted
 
+_Local Testing Datastores_
+
+- local testing attempts to backup and restore the event and read model datastores within the `/.booster` directory
+  - currently, this is a simple backup/restore mechanism that can encounter issues (see below)
+    - if it is critical to preserve local datastores' state before testing, also back these up manually
+  - backup and restore is done via setup and teardown methods in `/test/globalSetup.ts`
+  -   when testing is _started_ it will backup all files within the `/.booster` directory (normally, there should only be 2 files)
+    - while testing is _running_ you can inspect and edit how testing is affecting the datastores (`event.json` and `read_models.json` files)
+    - when testing is _stopped_ it will delete the testing datastores and restore the original ones
+  - when testing _crashes_ (e.g. due to a test error), the teardown methods do not run and both the testing and backup datastores are left in place
+    - if you start testing again, the setup methods will reproduce all of these files, creating more backups and not being able to successfully restore the original datastores
+    - in these cases you'll need to eventually clean up, and optionally restore, the local datastores manually
+
 **Testing Deployed Environment (AWS)**
 
 - run `npm run test:live`
@@ -122,10 +135,12 @@ jury is still out on whether this makes sense or not).
 
 **Source File Requirements**
 
-There are a few things the tests need or can use in source files:
+There are a few things the tests need or can use in Command source files:
 
-- an non-required `id` input parameter (of type 'string')
-  - this used to help the tests create and find entries in datastore
+- an `tid` input parameter
+  - this is currently required for tests to find the entries they created in the datastores
+  - it should be of type 'string'
+  - it can be an optional input in the Command's constructor
   - [example](https://github.com/ClaytonFarr/booster-testing-utilities/blob/master/src/commands/order-snack.ts#L14)
 - optional @syntax comments that can inform [testing automation](https://github.com/ClaytonFarr/booster-testing-utilities#testing-automation)
 
@@ -291,7 +306,12 @@ _Pseudo-changelog of updates to repo since initial publish - helpful if you clon
 
 **04-21-22**
 
-- updated testing `id` input parameter to use string instead of UUID to make it more flexible for user input in testing
+- Updated testing `id` input parameter
+  - to use string instead of UUID to make it more flexible for user input in testing
+  - renamed from `id` to `tid` to help avoid future possible conflicts
+- Updated notes
+  - added "Source File Requirements" section with notes about currently required `tid` in commands
+  - added notes to "Testing Local Environment" about methods that backup/restore local datastores in `/test/globalSetup.ts`
 
 **04-20-22**
 

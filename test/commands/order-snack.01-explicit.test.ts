@@ -22,7 +22,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
   const acceptedInputs: helpers.Input[] = [
     { name: 'fruit', type: 'String', required: true },
     { name: 'drink', type: 'String', validExample: 'water' },
-    { name: 'id', type: 'ID' },
+    { name: 'id', type: 'String' },
   ]
   const registeredEvents: helpers.RegisteredEvent[] = [
     // event, the command input required to register it, and one of events reducing entities (to evaluate result)
@@ -229,7 +229,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
     resultWaitTime = 5000
   ): Promise<boolean> => {
     // reference values
-    const id = faker.datatype.uuid()
+    const id = faker.datatype.uuid().toString() // test 'id' param is set to 'string' type to other accept custom values
     const primaryKey = `${work.evaluatedEntity}-${id}-snapshot`
 
     // submit command
@@ -286,7 +286,7 @@ describe('[Explicit Data + Tests] Order Snack Command', async () => {
     resultWaitTime = 5000
   ): Promise<boolean> => {
     // event store query expects primary key that matches `entityTypeName_entityID_kind` value
-    const id = faker.datatype.uuid()
+    const id = faker.datatype.uuid().toString() // test 'id' param is set to 'string' type to other accept custom values
     const primaryKey = `${registeredEvent.evaluatedEntity}-${id}-event`
 
     // command variables

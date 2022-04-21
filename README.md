@@ -120,6 +120,16 @@ jury is still out on whether this makes sense or not).
   - in original terminal (where tests running), press `a` to re-run tests
 - when cancel process in original terminal, should nuke deployed test stack
 
+**Source File Requirements**
+
+There are a few things the tests need or can use in source files:
+
+- an non-required `id` input parameter (of type 'string')
+  - this used to help the tests create and find entries in datastore
+  - [example](https://github.com/ClaytonFarr/booster-testing-utilities/blob/master/src/commands/order-snack.ts#L14)
+- optional @syntax comments that can inform [testing automation](https://github.com/ClaytonFarr/booster-testing-utilities#testing-automation)
+
+
 ### Testing Tools
 
 - This repo uses [Vitest](https://vitest.dev/) to run tests - but that is not required.
@@ -278,6 +288,10 @@ _Note: some helper utilities abstract the test creation substantially (e.g. with
 ## Repo Updates
 
 _Pseudo-changelog of updates to repo since initial publish - helpful if you cloned an earlier version and want to check what's new._
+
+**04-21-22**
+
+- updated testing `id` input parameter to use string instead of UUID to make it more flexible for user input in testing
 
 **04-20-22**
 

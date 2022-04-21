@@ -13,7 +13,7 @@ describe(`[Explicit Data + Helper Methods] ${helpers.pascalToTitleCase(commandNa
   const acceptedInputs: helpers.Input[] = [
     { name: 'fruit', type: 'String', required: true },
     { name: 'drink', type: 'String', validExample: 'water' },
-    { name: 'id', type: 'ID' },
+    { name: 'id', type: 'String' },
   ]
   const registeredEvents: helpers.RegisteredEvent[] = [
     // event, the command input required to register it, and one of events reducing entities (to evaluate result)

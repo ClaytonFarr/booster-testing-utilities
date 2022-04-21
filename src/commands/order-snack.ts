@@ -11,7 +11,7 @@ export class OrderSnack {
   public constructor(
     readonly fruit: string,
     readonly drink?: string, // @validExample: 'water'
-    readonly id?: UUID // optional input used by automated tests
+    readonly id?: string // optional input used by automated tests
   ) {}
 
   public static async handle(command: OrderSnack, register: Register): Promise<void> {

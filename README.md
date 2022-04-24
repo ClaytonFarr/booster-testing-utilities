@@ -308,6 +308,11 @@ _Note: some helper utilities abstract the test creation substantially (e.g. with
 
 _Pseudo-changelog of updates to repo since initial publish - helpful if you cloned an earlier version and want to check what's new._
 
+**04-24-22**
+
+- Added `test-helpers/helper-readmodels`
+  - stubbed out initial methods for testing data projected into read models
+
 **04-21-22**
 
 - Updated testing `id` input parameter
@@ -316,7 +321,7 @@ _Pseudo-changelog of updates to repo since initial publish - helpful if you clon
 - Updated notes
   - added "Source File Requirements" section with notes about currently required `tid` in commands
   - added notes to "Testing Local Environment" about methods that backup/restore local datastores in `/test/globalSetup.ts`
-- Updated `test-helpers/helper-command`
+- Updated `test-helpers/helper-commands`
   - fix `wasWorkDone` and `wasEventRegistered` methods to utilize a `tid` value manually set in command request
   - allow multiple values to be used for Work to be Done `shouldHave` values (true|false or array of 1+ string/number values)
 
@@ -325,7 +330,7 @@ _Pseudo-changelog of updates to repo since initial publish - helpful if you clon
 - Added `start:testing` script and comment to package.json to utilize MODE=test variable for Vitest tests.
 - Changed `@work00-result` syntax to `@work00-shouldHave`
 - Normalized input format/syntax for command inputs and work-to-be-done inputs
-- Updated `test-helpers/helper-command`
+- Updated `test-helpers/helper-commands`
   - update `getRegisteredEvents` utility regex to better match various code patterns.
   - update `getWorkToBeDone` utility to use '-shouldHave' syntax
   - add `getWorkToBeDone` errors if a @work comment set is incomplete

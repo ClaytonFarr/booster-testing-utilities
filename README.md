@@ -313,6 +313,7 @@ _Pseudo-changelog of updates to repo since initial publish - helpful if you clon
 - Updated `test-helpers/helper-readmodels`
   - returned list of items instead of boolean test
   - removed fixed inline filter for `tid` value within `id` field
+  - > have only tested these with local provider thus far
 - Updated `test-helpers/helper-misc`
   - add utility to test if string is JSON or not
 - Updated `test-helpers/helper-commands`
@@ -322,6 +323,7 @@ _Pseudo-changelog of updates to repo since initial publish - helpful if you clon
 
 - Added `test-helpers/helper-readmodels`
   - stubbed out initial methods for testing data projected into read models
+  - > have only tested these with local provider thus far
 
 **04-21-22**
 

@@ -6,10 +6,11 @@ import type { DocumentNode } from 'graphql'
 import { applicationUnderTest, unAuthGraphQLclient, authGraphQLclient } from '../test-helpers'
 import { describe, it, expect } from 'vitest'
 import { faker } from '@faker-js/faker'
-import { waitForIt } from '.'
+import { waitForIt, isStringJSON } from '.'
 import gql from 'graphql-tag'
 import path from 'path'
 import fs from 'fs'
+import console from 'console'
 
 // General
 // =====================================================================================================================
@@ -596,7 +597,9 @@ export const wasWorkDone = async (
     let filteredResults = lookupResults
     work.shouldHave.forEach((expectedValue) => {
       let filter = expectedValue
-      if (typeof expectedValue === 'string') filter = expectedValue.replace(/'/g, '').replace(/"/g, '')
+      if (typeof expectedValue === 'string' && !isStringJSON(expectedValue.toString()))
+        // if a standard string, remove quotes for test (skip if stringified JSON)
+        filter = expectedValue.replace(/'/g, '').replace(/"/g, '')
       filteredResults = filteredResults.filter((record) => JSON.stringify(record.value).includes(filter.toString()))
     })
     evaluationResult = filteredResults.length > 0

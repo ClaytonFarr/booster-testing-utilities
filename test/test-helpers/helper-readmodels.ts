@@ -2,7 +2,7 @@ import type { ApolloClient } from 'apollo-client'
 import type { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import type { DocumentNode } from 'graphql'
 import { applicationUnderTest } from '../test-helpers'
-import { waitForIt, looseJSONparse } from '.'
+import { waitForIt, looseJSONparse, isStringJSON } from '.'
 import { faker } from '@faker-js/faker'
 import gql from 'graphql-tag'
 
@@ -51,21 +51,21 @@ export const evaluateReadModelProjection = async (
 
   // ...grab necessary fields to check
   const fieldNames = fieldsToCheck.map((field) => field.fieldName)
-  fieldNames.push('id')
-  const uniqueFieldNames = new Set([...fieldNames])
-  const fieldsToReturn = [...uniqueFieldNames].join(',')
+  const fieldsToReturn = [...fieldNames].join(',')
 
   // ...create filter string
   let filterString = '{ '
   fieldsToCheck.forEach((field) => {
-    if (typeof field.shouldContainValue === 'string') {
+    // currently limited to filters from strings, numbers, and booleans
+    // JSON or stringified JSON value checks will be ignored
+    if (typeof field.shouldContainValue === 'string' && !isStringJSON(field.shouldContainValue)) {
       filterString += `${field.fieldName}: { contains: "${field.shouldContainValue}" }, `
     }
     if (typeof field.shouldContainValue !== 'string') {
       filterString += `${field.fieldName}: { eq: ${field.shouldContainValue} }, `
     }
   })
-  filterString += `id: { contains: "${tid}" } }`
+  filterString += ' }'
 
   // ...build query
   const filterBy = looseJSONparse(filterString)

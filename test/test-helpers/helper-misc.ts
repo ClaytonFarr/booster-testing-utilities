@@ -43,6 +43,17 @@ export async function waitForIt<TResult>(
 }
 
 export const pascalToTitleCase = (str: string): string => str.replace(/([a-z])([A-Z])/g, '$1 $2')
+
 export const camelToKebabCase = (str: string): string => str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
 
-export const looseJSONparse = (JSONstring: string) => Function('"use strict";return (' + JSONstring + ')')()
+export const isStringJSON = (testString: string): boolean => {
+  try {
+    JSON.parse(testString)
+  } catch (e) {
+    return false
+  }
+  return true
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const looseJSONparse = (JSONstring: string): any => Function('"use strict";return (' + JSONstring + ')')()

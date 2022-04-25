@@ -308,6 +308,16 @@ _Note: some helper utilities abstract the test creation substantially (e.g. with
 
 _Pseudo-changelog of updates to repo since initial publish - helpful if you cloned an earlier version and want to check what's new._
 
+**04-25-22**
+
+- Updated `test-helpers/helper-readmodels`
+  - returned list of items instead of boolean test
+  - removed fixed inline filter for `tid` value within `id` field
+- Updated `test-helpers/helper-misc`
+  - add utility to test if string is JSON or not
+- Updated `test-helpers/helper-commands`
+  - updated `wasWorkDone` method to account for stringified JSON values
+
 **04-24-22**
 
 - Added `test-helpers/helper-readmodels`

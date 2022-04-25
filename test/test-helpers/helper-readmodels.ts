@@ -27,7 +27,7 @@ export const evaluateReadModelProjection = async (
   sortBy?: Record<string, unknown>,
   limitResultsTo?: number,
   resultWaitTime = 5000
-): Promise<boolean> => {
+): Promise<Record<string, unknown>> => {
   // make test mutation for query
   const tid = commandVariables.tid || `${entityName}-read-model-test-id-${faker.datatype.number(100)}`
   const mutationVariables = { tid, ...commandVariables }
@@ -77,7 +77,7 @@ export const evaluateReadModelProjection = async (
   const { data } = await readGraphQLclient.query({ query: connectionQuery, variables: queryVariables })
   const items = data[`List${readModelName}s`].items
 
-  return items.length > 0
+  return items
 }
 
 export const createQueryVariables = (

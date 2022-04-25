@@ -437,7 +437,8 @@ export interface WorkToBeDone {
   workToDo: string
   testInputs: Record<string, unknown>
   evaluatedEntity: string
-  shouldHave: boolean | Array<string | number> // can be true|false or ['one', 'or more strings', 123]
+  shouldHave?: boolean | Array<string | number> // can be true or ['one', 'or more strings or numbers', 123]
+  shouldNotHave?: boolean | Array<string | number>
 }
 
 export const getWorkToBeDone = (
@@ -584,13 +585,20 @@ export const wasWorkDone = async (
 
   // evaluate result
   const lookupResults = (await applicationUnderTest.query.events(primaryKey)) as unknown as EventEnvelope[]
-  let evaluationResult: boolean
+  let shouldHaveEvaluationResult: boolean
+  let shouldNotHaveEvaluationResult: boolean
+  let finalEvaluationResult: boolean
 
   // ...if a result should simply exist
-  if (work.shouldHave === true) evaluationResult = lookupResults.length > 0
+  if (work.shouldHave === true) finalEvaluationResult = lookupResults.length > 0
+  if (work.shouldHave === false) throw Error("If trying to test for absence of result, use 'shouldNotHave: false'")
 
   // ...if a result should NOT exist
-  if (work.shouldHave === false) evaluationResult = lookupResults.length === 0
+  if (work.shouldNotHave === true) finalEvaluationResult = lookupResults.length === 0
+  if (work.shouldNotHave === false) throw Error("If trying to test for presence of result, use 'shouldHave: true'")
+
+  if (!work.shouldHave && !work.shouldNotHave)
+    throw Error("Please include 'shouldHave' and/or 'shouldNotHave' for work item")
 
   // ...if expected result should include one or more values, check all values are present
   if (typeof work.shouldHave === 'object') {
@@ -602,10 +610,30 @@ export const wasWorkDone = async (
         filter = expectedValue.replace(/'/g, '').replace(/"/g, '')
       filteredResults = filteredResults.filter((record) => JSON.stringify(record.value).includes(filter.toString()))
     })
-    evaluationResult = filteredResults.length > 0
+    // should return true if all values are present
+    shouldHaveEvaluationResult = filteredResults.length > 0
+    finalEvaluationResult = shouldHaveEvaluationResult // will be overridden if shouldNotHave is present as well
   }
 
-  return evaluationResult
+  // ...if expected result should NOT include one or more values, check all values are NOT present
+  if (typeof work.shouldNotHave === 'object') {
+    let filteredResults = lookupResults
+    work.shouldNotHave.forEach((expectedValue) => {
+      let filter = expectedValue
+      if (typeof expectedValue === 'string' && !isStringJSON(expectedValue.toString()))
+        // if a standard string, remove quotes for test (skip if stringified JSON)
+        filter = expectedValue.replace(/'/g, '').replace(/"/g, '')
+      filteredResults = filteredResults.filter((record) => JSON.stringify(record.value).includes(filter.toString()))
+    })
+    // should return true if all values are NOT present
+    shouldNotHaveEvaluationResult = filteredResults.length === 0
+    finalEvaluationResult = shouldNotHaveEvaluationResult // will be overridden if shouldHave is present as well
+  }
+
+  if (shouldHaveEvaluationResult && shouldNotHaveEvaluationResult)
+    finalEvaluationResult = shouldHaveEvaluationResult && shouldNotHaveEvaluationResult
+
+  return finalEvaluationResult
 }
 
 // Command Registered Events

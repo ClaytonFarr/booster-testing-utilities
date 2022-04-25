@@ -318,6 +318,7 @@ _Pseudo-changelog of updates to repo since initial publish - helpful if you clon
   - add utility to test if string is JSON or not
 - Updated `test-helpers/helper-commands`
   - updated `wasWorkDone` method to account for stringified JSON values
+  - added 'shouldNotHave' option to `wasWorkDone` method
 
 **04-24-22**
 

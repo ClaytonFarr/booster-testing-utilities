@@ -34,7 +34,7 @@ export class LocalQueries {
     // filter items for request
     items = items.filter((item) => item.kind === entityKind) // filter by kind
     items = items.filter((item) => JSON.stringify(item).includes(entityID)) // filter by test ID
-    items = items.filter((item) => JSON.stringify(item).includes(entityTypeName)) // this entity type
+    items = items.filter((item) => item.entityTypeName.toLowerCase() === entityTypeName.toLowerCase()) // this entity type
 
     return items
   }
